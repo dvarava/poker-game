@@ -5,8 +5,82 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:poker_game"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Poker" Height="480" Width="320" Loaded="Window_Loaded">
     <Grid>
-        
+        <TextBlock Text="Deck" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0"/>
+        <TextBlock x:Name="tblDeck" FontSize="30px" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,26,0,0"/>
+
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Community Cards:" HorizontalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal">
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblCommunityCard1" Margin="5"/>
+                </Border>
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblCommunityCard2" Margin="5"/>
+                </Border>
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblCommunityCard3" Margin="5"/>
+                </Border>
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblCommunityCard4" Margin="5"/>
+                </Border>
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblCommunityCard5" Margin="5"/>
+                </Border>
+            </StackPanel>
+        </StackPanel>
+
+        <Grid>
+            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,50,0,0">
+                <TextBlock Text="Player 1" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="tblStackPlayer1"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,50,10,0">
+                <TextBlock Text="Player 2" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="tblStackPlayer2"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,50">
+                <TextBlock Text="Player 3" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="tblStackPlayer3"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,50">
+                <TextBlock Text="Player 4" HorizontalAlignment="Center"/>
+                <TextBlock x:Name="tblStackPlayer4"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                    <TextBlock Text="&#x1F0A0;" FontSize="30px"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10">
+            <TextBlock x:Name="tblStackPlayer5" HorizontalAlignment="Center"/>
+            <TextBlock Text="Your Cards:" HorizontalAlignment="Center"/>
+            <StackPanel Orientation="Horizontal">
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblUserCard1" Text="Card 1" Margin="5"/>
+                </Border>
+                <Border BorderBrush="Black" BorderThickness="1" Margin="5" Height="50" Width="40">
+                    <TextBlock x:Name="tblUserCard2" Text="Card 2" Margin="5"/>
+                </Border>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>
