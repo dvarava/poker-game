@@ -20,100 +20,220 @@ namespace poker_game
     /// </summary>
     public partial class MainWindow : Window
     {
-        private List<Card> deck;
-        private List<Player> players;
-        private List<Card> communityCards;
+        private Deck deck;
+        private Card[] communityCards;
+        private Player[] players;
+        private int pot;
+        private int currentPlayerIndex;
+        private int smallBlind;
+        private int bigBlind;
+        private int currentBet;
 
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            InitializeGame();
-            DealCards();
-        }
-
-        private void InitializeGame()
-        {
-            deck = CreateDeck();
-            tblDeck.Text = "\uD83C\uDCCF";
-
-            players = new List<Player>
+            communityCards = new Card[5];
+            players = new Player[]
             {
                 new Player("Player 1", 1000),
                 new Player("Player 2", 1000),
                 new Player("Player 3", 1000),
                 new Player("Player 4", 1000),
-                new Player("User", 1000)
+                new Player("You", 1000)
             };
-
-            communityCards = new List<Card>();
+            pot = 0;
+            smallBlind = 10;
+            bigBlind = 20;
+            currentPlayerIndex = 0;
         }
 
-        private List<Card> CreateDeck()
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var ranks = new[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-            var suits = new[] { '\u2665', '\u2666', '\u2663', '\u2660' }; // Hearts, Diamonds, Clubs, Spades
-
-            var deck = new List<Card>();
-            foreach (var suit in suits)
-            {
-                foreach (var rank in ranks)
-                {
-                    deck.Add(new Card(rank, suit));
-                }
-            }
-
-            return deck;
+            deck = new Deck();
+            deck.Shuffle();
+            DealCards();
+            UpdatePlayerDisplays();
+            UpdateChipDisplays();
+            UpdateCurrentPlayerDisplay();
+            UpdateDeckDisplay();
         }
 
-        private void ShuffleDeck()
+        private void UpdateDeckDisplay()
         {
-            Random random = new Random();
-            int n = deck.Count;
-            while (n > 1)
-            {
-                n--;
-                int k = random.Next(n + 1);
-                Card value = deck[k];
-                deck[k] = deck[n];
-                deck[n] = value;
-            }
+            tblDeck.Text = $"Cards in Deck: {deck.Cards.Count}";
         }
 
         private void DealCards()
         {
-            ShuffleDeck();
+            // Deal community cards
+            for (int i = 0; i < 5; i++)
+            {
+                communityCards[i] = deck.DealCard();
+                UpdateCommunityCardDisplay(i, communityCards[i]);
+            }
 
+            // Deal player cards
             foreach (var player in players)
             {
-                player.Hand = deck.Take(2).ToList();
-                deck.RemoveRange(0, 2);
-
-                player.Card1 = player.Hand[0];
-                player.Card2 = player.Hand[1];
-
+                player.DealCard(deck.DealCard());
+                player.DealCard(deck.DealCard());
+                UpdatePlayerCardDisplay(player);
             }
-
-            communityCards.AddRange(deck.Take(5));
-            deck.RemoveRange(0, 5);
-
-            UpdateUI();
         }
 
-        private void UpdateUI()
+        private TextBlock GetCommunityCardTextBlock(int index)
         {
-            tblUserCard1.Text = players[4].Card1.ToString();
-            tblUserCard2.Text = players[4].Card2.ToString();
-
-            for (int i = 0; i <= 4; i++)
+            switch (index)
             {
-                TextBlock stackTextBlock = FindName($"tblStackPlayer{i + 1}") as TextBlock;
-
-                stackTextBlock.Text = players[i].Stack.ToString();
+                case 0: return tblCommunityCard1;
+                case 1: return tblCommunityCard2;
+                case 2: return tblCommunityCard3;
+                case 3: return tblCommunityCard4;
+                case 4: return tblCommunityCard5;
+                default: throw new ArgumentOutOfRangeException(nameof(index), "Index must be between 0 and 4.");
             }
+        }
+
+        private void UpdateCommunityCardDisplay(int index, Card card)
+        {
+            TextBlock cardTextBlock = GetCommunityCardTextBlock(index);
+            cardTextBlock.Text = card.UnicodeImage;
+        }
+
+        private TextBlock GetPlayerCardTextBlock(Player player, int cardIndex)
+        {
+            switch (player.Name)
+            {
+                case "Player 1": return cardIndex == 0 ? tblPlayerCard1 : tblPlayerCard2;
+                case "Player 2": return cardIndex == 0 ? tblPlayerCard3 : tblPlayerCard4;
+                case "Player 3": return cardIndex == 0 ? tblPlayerCard5 : tblPlayerCard6;
+                case "Player 4": return cardIndex == 0 ? tblPlayerCard7 : tblPlayerCard8;
+                case "You": return cardIndex == 0 ? tblYourCard1 : tblYourCard2;
+                default: throw new ArgumentException("Invalid player name.", nameof(player));
+            }
+        }
+
+        private TextBlock GetPlayerTextBlock(int playerIndex)
+        {
+            switch (playerIndex)
+            {
+                case 0: return tblPlayer1;
+                case 1: return tblPlayer2;
+                case 2: return tblPlayer3;
+                case 3: return tblPlayer4;
+                case 4: return tblPlayer5;
+                default: throw new ArgumentOutOfRangeException(nameof(playerIndex), "Index must be between 0 and 4.");
+            }
+        }
+
+        private TextBlock GetPlayerChipTextBlock(int playerIndex)
+        {
+            switch (playerIndex)
+            {
+                case 0: return tblStackPlayer1Chips;
+                case 1: return tblStackPlayer2Chips;
+                case 2: return tblStackPlayer3Chips;
+                case 3: return tblStackPlayer4Chips;
+                case 4: return tblStackPlayer5Chips;
+                default: throw new ArgumentOutOfRangeException(nameof(playerIndex), "Index must be between 0 and 4.");
+            }
+        }
+
+        private void UpdatePlayerCardDisplay(Player player)
+        {
+            for (int i = 0; i < player.Hand.Count; i++)
+            {
+                TextBlock cardTextBlock = GetPlayerCardTextBlock(player, i);
+                cardTextBlock.Text = player.Hand[i].UnicodeImage;
+            }
+        }
+
+        private void UpdatePlayerDisplays()
+        {
+            for (int i = 0; i < players.Length; i++)
+            {
+                TextBlock playerTextBlock = GetPlayerTextBlock(i);
+                playerTextBlock.Text = players[i].Name;
+
+                TextBlock chipTextBlock = GetPlayerChipTextBlock(i);
+                chipTextBlock.Text = $"{players[i].Chips}";
+            }
+        }
+
+        private void UpdateChipDisplays()
+        {
+            for (int i = 0; i < players.Length; i++)
+            {
+                TextBlock chipTextBlock = GetPlayerChipTextBlock(i);
+                chipTextBlock.Text = $"{players[i].Chips}";
+            }
+        }
+
+        private void UpdateCurrentPlayerDisplay()
+        {
+            TextBlock currentPlayerTextBlock = tblCurrentPlayer;
+            currentPlayerTextBlock.Text = $"Current Player: {players[currentPlayerIndex].Name}";
+        }
+
+        private void BtnCall_Click(object sender, RoutedEventArgs e)
+        {
+            int callAmount = GetCallAmount();
+            Player currentPlayer = players[currentPlayerIndex];
+            currentPlayer.PlaceBet(callAmount);
+            pot += callAmount;
+            UpdateChipDisplays();
+            UpdatePotDisplay();
+            NextPlayer();
+        }
+
+        private void BtnRaise_Click(object sender, RoutedEventArgs e)
+        {
+            RaiseAmountDialog dialog = new RaiseAmountDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                int raiseAmount = dialog.RaiseAmount;
+                int callAmount = GetCallAmount();
+                if (raiseAmount >= callAmount && raiseAmount <= players[currentPlayerIndex].Chips)
+                {
+                    Player currentPlayer = players[currentPlayerIndex];
+                    currentPlayer.PlaceBet(raiseAmount);
+                    pot += raiseAmount;
+                    UpdateChipDisplays();
+                    UpdatePotDisplay();
+                    NextPlayer();
+                }
+                else
+                {
+                    MessageBox.Show("Invalid raise amount. It must be at least as much as the current bet and not more than your chips.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void BtnFold_Click(object sender, RoutedEventArgs e)
+        {
+            Player currentPlayer = players[currentPlayerIndex];
+            currentPlayer.Fold();
+            NextPlayer();
+        }
+
+        private int GetCallAmount()
+        {
+            Player currentPlayer = players[currentPlayerIndex];
+            int callAmount = currentBet - currentPlayer.TotalBet;
+            return callAmount > 0 ? callAmount : 0;
+        }
+
+        private void NextPlayer()
+        {
+            do
+            {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.Length;
+            } while (players[currentPlayerIndex].Folded);
+        }
+
+        private void UpdatePotDisplay()
+        {
+            tblPot.Text = $"Pot: {pot}";
         }
     }
 }

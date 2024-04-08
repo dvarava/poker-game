@@ -8,17 +8,46 @@ namespace poker_game
 {
     public class Player
     {
-        public string Name { get; }
-        public int Stack { get; set; }
+        public string Name { get; set; }
         public List<Card> Hand { get; set; }
-        public Card Card1 { get; set; }
-        public Card Card2 { get; set; }
+        public int Chips { get; set; }
+        public int CurrentBet { get; set; }
+        public int TotalBet { get; set; }
+        public bool Folded { get; set; }
 
-        public Player(string name, int initialStack)
+        public Player(string name, int chips)
         {
             Name = name;
             Hand = new List<Card>();
-            Stack = initialStack;
+            Chips = chips;
+            CurrentBet = 0;
+            Folded = false;
+        }
+
+        public void DealCard(Card card)
+        {
+            Hand.Add(card);
+        }
+
+        public void ResetHand()
+        {
+            Hand.Clear();
+            CurrentBet = 0;
+            Folded = false;
+        }
+
+        public void PlaceBet(int amount)
+        {
+            if (amount <= Chips)
+            {
+                Chips -= amount;
+                CurrentBet += amount;
+            }
+        }
+
+        public void Fold()
+        {
+            Folded = true;
         }
     }
 }
