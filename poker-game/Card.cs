@@ -93,7 +93,8 @@ namespace poker_game
             {"TenClubs", "\ud83c\uDCDA" },
             {"JackClubs", "\ud83c\uDCDB" },
             {"QueenClubs", "\ud83c\uDCDD" },
-            {"KingClubs", "\uD83C\uDCDE" }        };
+            {"KingClubs", "\uD83C\uDCDE" }
+        };
 
         public Card() { }
 

@@ -12,6 +12,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static poker_game.MainWindow;
+
+// things to fix:
+// when only 1 player checked, next round starts
+// current player is not working propely(because of too many NextPlayer(), which messes up who is Current Player)
+// after MessageBox error, the betting round ends
+// add DetermineWinner()
 
 namespace poker_game
 {
@@ -28,6 +35,7 @@ namespace poker_game
         private int smallBlind;
         private int bigBlind;
         private int currentBet;
+        private PlayerAction playerAction;
 
         public MainWindow()
         {
@@ -47,7 +55,7 @@ namespace poker_game
             currentPlayerIndex = 0;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             deck = new Deck();
             deck.Shuffle();
@@ -55,7 +63,9 @@ namespace poker_game
             UpdatePlayerDisplays();
             UpdateChipDisplays();
             UpdateCurrentPlayerDisplay();
-            UpdateDeckDisplay();
+            //UpdateDeckDisplay();
+
+            await StartGame();
         }
 
         private void UpdateDeckDisplay()
@@ -63,16 +73,16 @@ namespace poker_game
             tblDeck.Text = $"Cards in Deck: {deck.Cards.Count}";
         }
 
+
         private void DealCards()
         {
             // Deal community cards
             for (int i = 0; i < 5; i++)
             {
                 communityCards[i] = deck.DealCard();
-                UpdateCommunityCardDisplay(i, communityCards[i]);
             }
 
-            // Deal player cards
+            // Deal and display  player cards
             foreach (var player in players)
             {
                 player.DealCard(deck.DealCard());
@@ -81,6 +91,7 @@ namespace poker_game
             }
         }
 
+        // Methods that are selecting the TextBlocks and updates their values
         private TextBlock GetCommunityCardTextBlock(int index)
         {
             switch (index)
@@ -92,12 +103,6 @@ namespace poker_game
                 case 4: return tblCommunityCard5;
                 default: throw new ArgumentOutOfRangeException(nameof(index), "Index must be between 0 and 4.");
             }
-        }
-
-        private void UpdateCommunityCardDisplay(int index, Card card)
-        {
-            TextBlock cardTextBlock = GetCommunityCardTextBlock(index);
-            cardTextBlock.Text = card.UnicodeImage;
         }
 
         private TextBlock GetPlayerCardTextBlock(Player player, int cardIndex)
@@ -122,6 +127,19 @@ namespace poker_game
                 case 2: return tblPlayer3;
                 case 3: return tblPlayer4;
                 case 4: return tblPlayer5;
+                default: throw new ArgumentOutOfRangeException(nameof(playerIndex), "Index must be between 0 and 4.");
+            }
+        }
+
+        private TextBlock GetPlayerActionTextBlock(int playerIndex)
+        {
+            switch (playerIndex)
+            {
+                case 0: return tblPlayer1Action;
+                case 1: return tblPlayer2Action;
+                case 2: return tblPlayer3Action;
+                case 3: return tblPlayer4Action;
+                case 4: return tblPlayer5Action;
                 default: throw new ArgumentOutOfRangeException(nameof(playerIndex), "Index must be between 0 and 4.");
             }
         }
@@ -154,9 +172,6 @@ namespace poker_game
             {
                 TextBlock playerTextBlock = GetPlayerTextBlock(i);
                 playerTextBlock.Text = players[i].Name;
-
-                TextBlock chipTextBlock = GetPlayerChipTextBlock(i);
-                chipTextBlock.Text = $"{players[i].Chips}";
             }
         }
 
@@ -175,52 +190,38 @@ namespace poker_game
             currentPlayerTextBlock.Text = $"Current Player: {players[currentPlayerIndex].Name}";
         }
 
-        private void BtnCall_Click(object sender, RoutedEventArgs e)
+        private void UpdatePlayerAction(Player player, string action)
         {
-            int callAmount = GetCallAmount();
-            Player currentPlayer = players[currentPlayerIndex];
-            currentPlayer.PlaceBet(callAmount);
-            pot += callAmount;
-            UpdateChipDisplays();
-            UpdatePotDisplay();
-            NextPlayer();
+            TextBlock actionTextBlock = GetPlayerActionTextBlock(Array.IndexOf(players, player));
+            actionTextBlock.Text = action;
         }
 
-        private void BtnRaise_Click(object sender, RoutedEventArgs e)
+        private void ClearPlayerActionTextBlocks()
         {
-            RaiseAmountDialog dialog = new RaiseAmountDialog();
-            if (dialog.ShowDialog() == true)
+            for (int i = 0; i < 5; i++)
             {
-                int raiseAmount = dialog.RaiseAmount;
-                int callAmount = GetCallAmount();
-                if (raiseAmount >= callAmount && raiseAmount <= players[currentPlayerIndex].Chips)
-                {
-                    Player currentPlayer = players[currentPlayerIndex];
-                    currentPlayer.PlaceBet(raiseAmount);
-                    pot += raiseAmount;
-                    UpdateChipDisplays();
-                    UpdatePotDisplay();
-                    NextPlayer();
-                }
-                else
-                {
-                    MessageBox.Show("Invalid raise amount. It must be at least as much as the current bet and not more than your chips.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
+                actionTextBlock.Text = string.Empty;
             }
         }
 
-        private void BtnFold_Click(object sender, RoutedEventArgs e)
+        private void UpdatePotDisplay()
         {
-            Player currentPlayer = players[currentPlayerIndex];
-            currentPlayer.Fold();
-            NextPlayer();
+            tblPot.Text = $"Pot: {pot}";
         }
 
-        private int GetCallAmount()
+        private void UpdateCommunityCardDisplay(int index, Card card)
         {
-            Player currentPlayer = players[currentPlayerIndex];
-            int callAmount = currentBet - currentPlayer.TotalBet;
-            return callAmount > 0 ? callAmount : 0;
+            TextBlock cardTextBlock = GetCommunityCardTextBlock(index);
+            cardTextBlock.Text = card.UnicodeImage;
+        }
+
+        private void RevealCommunityCards(int startIndex, int count)
+        {
+            for (int i = startIndex; i < startIndex + count; i++)
+            {
+                UpdateCommunityCardDisplay(i, communityCards[i]);
+            }
         }
 
         private void NextPlayer()
@@ -229,11 +230,222 @@ namespace poker_game
             {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.Length;
             } while (players[currentPlayerIndex].Folded);
+
+            UpdateCurrentPlayerDisplay();
         }
 
-        private void UpdatePotDisplay()
+        private void ResetPlayerCurrentBet()
         {
-            tblPot.Text = $"Pot: {pot}";
+            foreach (Player player in players)
+            {
+                player.CurrentBet = 0;
+            }
+        }
+
+        public enum PlayerAction
+        {
+            None,
+            Check,
+            Call,
+            Raise,
+            Fold
+        }
+
+        private async Task PerformBettingRound()
+        {
+            bool roundEnded = false;
+
+            do
+            {
+                Player currentPlayer = players[currentPlayerIndex];
+
+                // Wait until player makes a move (clicks a button)
+                while (playerAction == default(PlayerAction))
+                {
+                    await Task.Delay(100);
+                }
+
+                await TakeTurn(currentPlayer);
+                playerAction = default(PlayerAction);
+
+                if (IsBettingRoundOver())
+                {
+                    roundEnded = true;
+                }
+            } while (!roundEnded);
+
+            ResetPlayerCurrentBet();
+            await Task.Delay(1000);
+            ClearPlayerActionTextBlocks();
+            NextPlayer();
+            currentBet = 0;
+         }
+
+        private async Task TakeTurn(Player player)
+        {
+            // Determine the call amount for the player
+            int callAmount = GetCallAmount();
+
+            switch (playerAction)
+            {
+                case PlayerAction.Check:
+                    if (currentBet == 0)
+                    {
+                        UpdatePlayerAction(player, "Checked");
+                        NextPlayer();
+                    }
+                    else
+                    {
+                        MessageBox.Show("You cannot check. Someone has raised the bet.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    break;
+                case PlayerAction.Call:
+                    if (currentBet > 0)
+                    {
+                        if (player.CurrentBet == smallBlind)
+                        {
+                            player.PlaceBet(callAmount - smallBlind);
+                        }
+                        else
+                        {
+                            player.PlaceBet(callAmount - player.CurrentBet);
+                        }
+                        pot += callAmount;
+                        UpdatePlayerAction(player, $"Called {callAmount}");
+                        UpdateChipDisplays();
+                        UpdatePotDisplay();
+                        NextPlayer();
+                    }
+                    else
+                    {
+                        MessageBox.Show("You cannot call. The current bet is 0. Check instead", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    break;
+                case PlayerAction.Raise:
+                    int raiseAmount = GetRaiseAmount(player, callAmount);
+                    if (raiseAmount > callAmount && raiseAmount <= player.Chips)
+                    {
+                        player.PlaceBet(raiseAmount-player.CurrentBet);
+                        pot += raiseAmount;
+                        currentBet = raiseAmount; // Update the current bet
+                        UpdatePlayerAction(player, $"Raised to {raiseAmount}");
+                        UpdateChipDisplays();
+                        UpdatePotDisplay();
+                        NextPlayer();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid raise amount. It must be more than the current bet and less than your chips.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    break;
+                case PlayerAction.Fold:
+                    player.Fold();
+                    UpdatePlayerAction(player, "Folded");
+                    NextPlayer();
+                    break;
+            }
+        }
+
+        private bool IsBettingRoundOver()
+        {
+            int currentBetAmount = currentBet;
+            bool allCalled = true;
+
+            // I need to add if all players checked functionality here
+            foreach (Player player in players)
+            {
+                if (!player.Folded)
+                {
+                    if (player.CurrentBet < currentBetAmount)
+                    {
+                        // If at least one player hasn't called the current bet
+                        allCalled = false;
+                        break;
+                    }
+                }
+            }
+
+            return allCalled;
+        }
+
+            private int GetCallAmount()
+        {
+            Player currentPlayer = players[currentPlayerIndex];
+            int callAmount = currentBet;
+            return callAmount > 0 ? callAmount : 0;
+        }
+
+        private int GetRaiseAmount(Player player, int callAmount)
+        {
+            RaiseAmountDialog dialog = new RaiseAmountDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                return dialog.RaiseAmount;
+            }
+            else
+            {
+                return callAmount; // Set it to calling the current bet as a default for now
+            }
+        }
+
+        private async Task StartGame()
+        {
+            // Collect small blind and big blind
+            players[currentPlayerIndex].PlaceBet(smallBlind);
+            UpdatePlayerAction(players[currentPlayerIndex], $"Small Blind: {smallBlind}");
+            pot += smallBlind;
+            NextPlayer();
+
+            players[currentPlayerIndex].PlaceBet(bigBlind);
+            UpdatePlayerAction(players[currentPlayerIndex], $"Big Blind: {bigBlind}");
+            pot += bigBlind;
+            currentBet = bigBlind;
+            NextPlayer();
+            currentBet = bigBlind;
+
+            // Pre-flop betting round
+            await PerformBettingRound();
+
+            // Reveal the Flop
+            RevealCommunityCards(0, 3);
+
+            // Flop betting round
+            await PerformBettingRound();
+
+            // Reveal the Turn
+            RevealCommunityCards(3, 1);
+
+            // Turn betting round
+            await PerformBettingRound();
+
+            // Reveal the River
+            RevealCommunityCards(4, 1);
+
+            // River betting round
+            await PerformBettingRound();
+
+            // Determine the winner, add pot to his balance and  start again
+        }
+
+        // Buttons click events
+        private void BtnCall_Click(object sender, RoutedEventArgs e)
+        {
+            playerAction = PlayerAction.Call;
+        }
+
+        private void BtnRaise_Click(object sender, RoutedEventArgs e)
+        {
+            playerAction = PlayerAction.Raise;
+        }
+
+        private void BtnFold_Click(object sender, RoutedEventArgs e)
+        {
+            playerAction = PlayerAction.Fold;
+        }
+
+        private void btnCheck_Click(object sender, RoutedEventArgs e)
+        {
+            playerAction = PlayerAction.Check;
         }
     }
 }
