@@ -14,6 +14,7 @@ namespace poker_game
         public int CurrentBet { get; set; }
         public int TotalBet { get; set; }
         public bool Folded { get; set; }
+        public bool BigBlind { get; set; }
 
         public Player(string name, int chips)
         {
@@ -22,6 +23,7 @@ namespace poker_game
             Chips = chips;
             CurrentBet = 0;
             Folded = false;
+            BigBlind = false;
         }
 
         public void DealCard(Card card)

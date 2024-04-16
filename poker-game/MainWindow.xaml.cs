@@ -292,6 +292,8 @@ namespace poker_game
                     if (currentBet == 0)
                     {
                         UpdatePlayerAction(player, "Checked");
+                        //currentBet = 1;
+                        // idea is to add checking for 'check' in is betting round if bet is 1
                         NextPlayer();
                     }
                     else
@@ -305,6 +307,7 @@ namespace poker_game
                         if (player.CurrentBet == smallBlind)
                         {
                             player.PlaceBet(callAmount - smallBlind);
+                            pot -= smallBlind;
                         }
                         else
                         {
@@ -362,6 +365,12 @@ namespace poker_game
                         allCalled = false;
                         break;
                     }
+                    if (player.BigBlind == true)
+                    {
+                        allCalled = false;
+                        player.BigBlind = false;
+                        pot -= bigBlind;
+                    }
                 }
             }
 
@@ -400,8 +409,8 @@ namespace poker_game
             UpdatePlayerAction(players[currentPlayerIndex], $"Big Blind: {bigBlind}");
             pot += bigBlind;
             currentBet = bigBlind;
+            players[currentPlayerIndex].BigBlind = true;
             NextPlayer();
-            currentBet = bigBlind;
 
             // Pre-flop betting round
             await PerformBettingRound();
