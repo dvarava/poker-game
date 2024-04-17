@@ -36,6 +36,7 @@ namespace poker_game
         private int bigBlind;
         private int currentBet;
         private PlayerAction playerAction;
+        private int checkCount;
 
         public MainWindow()
         {
@@ -200,8 +201,11 @@ namespace poker_game
         {
             for (int i = 0; i < 5; i++)
             {
-                TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
-                actionTextBlock.Text = string.Empty;
+                if (!players[i].Folded)
+                {
+                    TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
+                    actionTextBlock.Text = string.Empty;
+                }
             }
         }
 
@@ -265,13 +269,15 @@ namespace poker_game
                     await Task.Delay(100);
                 }
 
+                // Make a move
                 await TakeTurn(currentPlayer);
-                playerAction = default(PlayerAction);
-
                 if (IsBettingRoundOver())
                 {
                     roundEnded = true;
                 }
+
+                // Reset player action to default
+                playerAction = default(PlayerAction);
             } while (!roundEnded);
 
             ResetPlayerCurrentBet();
@@ -279,7 +285,8 @@ namespace poker_game
             ClearPlayerActionTextBlocks();
             NextPlayer();
             currentBet = 0;
-         }
+            checkCount = 0;
+        }
 
         private async Task TakeTurn(Player player)
         {
@@ -292,8 +299,8 @@ namespace poker_game
                     if (currentBet == 0)
                     {
                         UpdatePlayerAction(player, "Checked");
-                        //currentBet = 1;
-                        // idea is to add checking for 'check' in is betting round if bet is 1
+                        checkCount++;
+                        // idea is to add checking for 'check' in is betting round if bet is -1
                         NextPlayer();
                     }
                     else
@@ -302,28 +309,35 @@ namespace poker_game
                     }
                     break;
                 case PlayerAction.Call:
-                    if (currentBet > 0)
+                    while (true)
                     {
-                        if (player.CurrentBet == smallBlind)
+                        if (currentBet > 0)
                         {
-                            player.PlaceBet(callAmount - smallBlind);
-                            pot -= smallBlind;
+                            if (player.CurrentBet == smallBlind)
+                            {
+                                player.PlaceBet(callAmount - smallBlind);
+                                pot -= smallBlind;
+                            }
+                            else
+                            {
+                                player.PlaceBet(callAmount - player.CurrentBet);
+                            }
+                            pot += callAmount;
+                            UpdatePlayerAction(player, $"Called {callAmount}");
+                            UpdateChipDisplays();
+                            UpdatePotDisplay();
+                            NextPlayer();
+                            break;
                         }
                         else
                         {
-                            player.PlaceBet(callAmount - player.CurrentBet);
+                            MessageBox.Show("You cannot call. The current bet is 0. Check instead", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            playerAction = PlayerAction.Check;
+                            break;
                         }
-                        pot += callAmount;
-                        UpdatePlayerAction(player, $"Called {callAmount}");
-                        UpdateChipDisplays();
-                        UpdatePotDisplay();
-                        NextPlayer();
-                    }
-                    else
-                    {
-                        MessageBox.Show("You cannot call. The current bet is 0. Check instead", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                     break;
+
                 case PlayerAction.Raise:
                     int raiseAmount = GetRaiseAmount(player, callAmount);
                     if (raiseAmount > callAmount && raiseAmount <= player.Chips)
@@ -352,34 +366,45 @@ namespace poker_game
         private bool IsBettingRoundOver()
         {
             int currentBetAmount = currentBet;
-            bool allCalled = true;
+            bool allCalledOrChecked = true;
 
             // I need to add if all players checked functionality here
             foreach (Player player in players)
             {
                 if (!player.Folded)
                 {
-                    if (player.CurrentBet < currentBetAmount)
+                    if (playerAction == PlayerAction.Check)
                     {
-                        // If at least one player hasn't called the current bet
-                        allCalled = false;
-                        break;
+                        if (checkCount != 5)
+                        {
+                            allCalledOrChecked = false;
+                            break;
+                        }
                     }
-                    if (player.BigBlind == true)
+                    else
                     {
-                        allCalled = false;
-                        player.BigBlind = false;
-                        pot -= bigBlind;
+                        if (player.CurrentBet < currentBetAmount)
+                        {
+                            // If at least one player hasn't called the current bet
+                            allCalledOrChecked = false;
+                            break;
+                        }
+                        // if BigBlind player called, the pot updates correctly
+                        if (player.BigBlind == true)
+                        {
+                            allCalledOrChecked = false;
+                            player.BigBlind = false;
+                            pot -= bigBlind;
+                        }
                     }
                 }
             }
 
-            return allCalled;
+            return allCalledOrChecked;
         }
 
-            private int GetCallAmount()
+        private int GetCallAmount()
         {
-            Player currentPlayer = players[currentPlayerIndex];
             int callAmount = currentBet;
             return callAmount > 0 ? callAmount : 0;
         }
