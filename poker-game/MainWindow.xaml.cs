@@ -37,6 +37,7 @@ namespace poker_game
         private int currentBet;
         private PlayerAction playerAction;
         private int checkCount;
+        private int startingChips = 1000;
 
         public MainWindow()
         {
@@ -44,11 +45,11 @@ namespace poker_game
             communityCards = new Card[5];
             players = new Player[]
             {
-                new Player("Player 1", 1000),
-                new Player("Player 2", 1000),
-                new Player("Player 3", 1000),
-                new Player("Player 4", 1000),
-                new Player("You", 1000)
+                new Player("Player 1", startingChips),
+                new Player("Player 2", startingChips),
+                new Player("Player 3", startingChips),
+                new Player("Player 4", startingChips),
+                new Player("You", startingChips)
             };
             pot = 0;
             smallBlind = 10;
@@ -281,7 +282,7 @@ namespace poker_game
             } while (!roundEnded);
 
             ResetPlayerCurrentBet();
-            await Task.Delay(1000);
+            await Task.Delay(800);
             ClearPlayerActionTextBlocks();
             NextPlayer();
             currentBet = 0;
@@ -300,7 +301,6 @@ namespace poker_game
                     {
                         UpdatePlayerAction(player, "Checked");
                         checkCount++;
-                        // idea is to add checking for 'check' in is betting round if bet is -1
                         NextPlayer();
                     }
                     else
@@ -367,34 +367,38 @@ namespace poker_game
         {
             int currentBetAmount = currentBet;
             bool allCalledOrChecked = true;
+            int activePlayers = players.Count(p => !p.Folded);
 
-            // I need to add if all players checked functionality here
-            foreach (Player player in players)
+            if (currentBetAmount == 0)
             {
-                if (!player.Folded)
+                // When the current bet is 0, check if all active players have checked
+                allCalledOrChecked = checkCount == activePlayers;
+            }
+            else
+            {
+                foreach (Player player in players)
                 {
-                    if (playerAction == PlayerAction.Check)
+                    if (!player.Folded)
                     {
-                        if (checkCount != 5)
+                        if (playerAction == PlayerAction.Check && checkCount != players.Count())
                         {
                             allCalledOrChecked = false;
-                            break;
                         }
-                    }
-                    else
-                    {
-                        if (player.CurrentBet < currentBetAmount)
+                        else
                         {
-                            // If at least one player hasn't called the current bet
-                            allCalledOrChecked = false;
-                            break;
-                        }
-                        // if BigBlind player called, the pot updates correctly
-                        if (player.BigBlind == true)
-                        {
-                            allCalledOrChecked = false;
-                            player.BigBlind = false;
-                            pot -= bigBlind;
+                            if (player.CurrentBet < currentBetAmount)
+                            {
+                                // If at least one player hasn't called the current bet
+                                allCalledOrChecked = false;
+                                break;
+                            }
+                            // if BigBlind player called, the pot updates correctly
+                            if (player.BigBlind == true)
+                            {
+                                allCalledOrChecked = false;
+                                player.BigBlind = false;
+                                pot -= bigBlind;
+                            }
                         }
                     }
                 }
@@ -459,6 +463,32 @@ namespace poker_game
             await PerformBettingRound();
 
             // Determine the winner, add pot to his balance and  start again
+        }
+
+        private void ResetGame()
+        {
+            // Reset player chips, bets, and folded status
+            ResetPlayerCurrentBet();
+
+            // Reset pot and currentBet
+            pot = 0;
+            currentBet = 0;
+
+            // Deal new cards to players
+            foreach (var player in players)
+            {
+                player.DealCard(deck.DealCard());
+                player.DealCard(deck.DealCard());
+                UpdatePlayerCardDisplay(player);
+            }
+
+            UpdateChipDisplays();
+            UpdateCurrentPlayerDisplay();
+            ClearPlayerActionTextBlocks();
+            UpdatePotDisplay();
+
+            // Start a new game
+            StartGame();
         }
 
         // Buttons click events
