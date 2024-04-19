@@ -15,9 +15,6 @@ using System.Windows.Shapes;
 using static poker_game.MainWindow;
 
 // things to fix:
-// when only 1 player checked, next round starts
-// current player is not working propely(because of too many NextPlayer(), which messes up who is Current Player)
-// after MessageBox error, the betting round ends
 // add DetermineWinner()
 
 namespace poker_game
@@ -200,7 +197,7 @@ namespace poker_game
 
         private void ClearPlayerActionTextBlocks()
         {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < players.Length; i++)
             {
                 if (!players[i].Folded)
                 {
@@ -208,6 +205,18 @@ namespace poker_game
                     actionTextBlock.Text = string.Empty;
                 }
             }
+        }
+
+        private void ClearCommunityCards()
+        {
+            for (int i = 0; i < communityCards.Length; i++)
+            {
+                TextBlock actionTextBlock = GetCommunityCardTextBlock(i);
+                actionTextBlock.Text = string.Empty;
+            }
+
+            Array.Clear(communityCards, 0, communityCards.Length);
+
         }
 
         private void UpdatePotDisplay()
@@ -231,6 +240,13 @@ namespace poker_game
 
         private void NextPlayer()
         {
+            // Check if all players have folded
+            if (players.All(p => p.Folded))
+            {
+                ResetGame(); // Restart the game with new cards
+                return;
+            }
+
             do
             {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.Length;
@@ -282,7 +298,7 @@ namespace poker_game
             } while (!roundEnded);
 
             ResetPlayerCurrentBet();
-            await Task.Delay(800);
+            await Task.Delay(500);
             ClearPlayerActionTextBlocks();
             NextPlayer();
             currentBet = 0;
@@ -357,7 +373,11 @@ namespace poker_game
                     break;
                 case PlayerAction.Fold:
                     player.Fold();
-                    UpdatePlayerAction(player, "Folded");
+                    if (!players.All(p => p.Folded))
+                    {
+                        UpdatePlayerAction(player, "Folded");
+                    }
+
                     NextPlayer();
                     break;
             }
@@ -422,7 +442,7 @@ namespace poker_game
             }
             else
             {
-                return callAmount; // Set it to calling the current bet as a default for now
+                return callAmount;
             }
         }
 
@@ -465,30 +485,36 @@ namespace poker_game
             // Determine the winner, add pot to his balance and  start again
         }
 
-        private void ResetGame()
+        private async void ResetGame()
         {
-            // Reset player chips, bets, and folded status
+            // Reset player action, each player's current bet, pot
+            playerAction = default(PlayerAction);
             ResetPlayerCurrentBet();
-
-            // Reset pot and currentBet
             pot = 0;
-            currentBet = 0;
 
-            // Deal new cards to players
+            // Reset each player's folded status, hand, action text
+            for (int i = 0; i < players.Length; i++)
+            {
+                TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
+                actionTextBlock.Text = string.Empty;
+            }
             foreach (var player in players)
             {
-                player.DealCard(deck.DealCard());
-                player.DealCard(deck.DealCard());
-                UpdatePlayerCardDisplay(player);
+                player.Folded = false;
+                player.Hand.Clear();
             }
 
-            UpdateChipDisplays();
-            UpdateCurrentPlayerDisplay();
-            ClearPlayerActionTextBlocks();
+            // Clear community cards displays, list
+            ClearCommunityCards();
+
+            // Deal new cards to players, community cards
+            DealCards();
+
+            // Update UI
             UpdatePotDisplay();
 
             // Start a new game
-            StartGame();
+            await StartGame();
         }
 
         // Buttons click events
