@@ -35,6 +35,8 @@ namespace poker_game
         private PlayerAction playerAction;
         private int checkCount;
         private int startingChips = 1000;
+        private int smallBlindIndex;
+        private int bigBlindIndex;
 
         public MainWindow()
         {
@@ -52,6 +54,8 @@ namespace poker_game
             smallBlind = 10;
             bigBlind = 20;
             currentPlayerIndex = 0;
+            smallBlindIndex = 0;
+            bigBlindIndex = 1;
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -278,8 +282,6 @@ namespace poker_game
 
             do
             {
-                Player currentPlayer = players[currentPlayerIndex];
-
                 // Wait until player makes a move (clicks a button)
                 while (playerAction == default(PlayerAction))
                 {
@@ -287,7 +289,7 @@ namespace poker_game
                 }
 
                 // Make a move
-                await TakeTurn(currentPlayer);
+                await TakeTurn(currentPlayerIndex);
                 if (IsBettingRoundOver())
                 {
                     roundEnded = true;
@@ -305,8 +307,10 @@ namespace poker_game
             checkCount = 0;
         }
 
-        private async Task TakeTurn(Player player)
+        private async Task TakeTurn(int currentPlayerIndex)
         {
+            Player player = players[currentPlayerIndex];
+
             // Determine the call amount for the player
             int callAmount = GetCallAmount();
 
@@ -412,7 +416,7 @@ namespace poker_game
                                 allCalledOrChecked = false;
                                 break;
                             }
-                            // if BigBlind player called, the pot updates correctly
+                            // if BigBlind player called, the pot updates properly
                             if (player.BigBlind == true)
                             {
                                 allCalledOrChecked = false;
@@ -449,17 +453,18 @@ namespace poker_game
         private async Task StartGame()
         {
             // Collect small blind and big blind
-            players[currentPlayerIndex].PlaceBet(smallBlind);
-            UpdatePlayerAction(players[currentPlayerIndex], $"Small Blind: {smallBlind}");
+            players[smallBlindIndex].PlaceBet(smallBlind);
+            UpdatePlayerAction(players[smallBlindIndex], $"Small Blind: {smallBlind}");
             pot += smallBlind;
-            NextPlayer();
 
-            players[currentPlayerIndex].PlaceBet(bigBlind);
-            UpdatePlayerAction(players[currentPlayerIndex], $"Big Blind: {bigBlind}");
+            players[bigBlindIndex].PlaceBet(bigBlind);
+            UpdatePlayerAction(players[bigBlindIndex], $"Big Blind: {bigBlind}");
             pot += bigBlind;
             currentBet = bigBlind;
-            players[currentPlayerIndex].BigBlind = true;
-            NextPlayer();
+            players[bigBlindIndex].BigBlind = true;
+
+            // Set the current player to the player after the big blind
+            currentPlayerIndex = (bigBlindIndex + 1) % players.Length;
 
             // Pre-flop betting round
             await PerformBettingRound();
@@ -504,8 +509,16 @@ namespace poker_game
                 player.Hand.Clear();
             }
 
+            // Rotate small blind, big blind indexes
+            smallBlindIndex = (smallBlindIndex + 1) % players.Length;
+            bigBlindIndex = (bigBlindIndex + 1) % players.Length;
+
             // Clear community cards displays, list
             ClearCommunityCards();
+
+            // Initialize a new deck and shuffle it
+            deck = new Deck();
+            deck.Shuffle();
 
             // Deal new cards to players, community cards
             DealCards();

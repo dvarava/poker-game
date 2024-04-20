@@ -12,7 +12,6 @@ namespace poker_game
         public List<Card> Hand { get; set; }
         public int Chips { get; set; }
         public int CurrentBet { get; set; }
-        public int TotalBet { get; set; }
         public bool Folded { get; set; }
         public bool BigBlind { get; set; }
 
