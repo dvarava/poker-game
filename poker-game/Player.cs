@@ -8,13 +8,18 @@ namespace poker_game
 {
     public class Player
     {
+        public int PlayerId { get; set; }
         public string Name { get; set; }
-        public List<Card> Hand { get; set; }
         public int Chips { get; set; }
         public int CurrentBet { get; set; }
         public bool Folded { get; set; }
         public bool BigBlind { get; set; }
+        public List<Card> Hand { get; } = new List<Card>();
 
+        public int GameId { get; set; } // Foreign key
+        public Game Game { get; set; } // Navigation property
+
+        public Player() { }
         public Player(string name, int chips)
         {
             Name = name;

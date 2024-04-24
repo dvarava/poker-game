@@ -16,8 +16,7 @@ namespace poker_game
 
     public enum Face
     {
-        Ace,
-        Two,
+        Two = 2,
         Three,
         Four,
         Five,
@@ -28,15 +27,22 @@ namespace poker_game
         Ten,
         Jack,
         Queen,
-        King
+        King,
+        Ace
     }
 
     public class Card
     {
+        public int CardId { get; set; }
         public Suit Suit { get; set; }
         public Face Face { get; set; }
         public string UnicodeImage { get; set; }
 
+        public int PlayerId { get; set; } // Foreign key
+        public Player Player { get; set; } // Navigation property
+
+
+        // Unicode images for each card
         private Dictionary<string, string> unicodeImages = new Dictionary<string, string>()
         {
             {"AceSpades", "\uD83C\uDCA1" },

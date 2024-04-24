@@ -7,8 +7,6 @@
         mc:Ignorable="d"
         Title="Poker" Height="480" Width="700" Loaded="Window_Loaded">
     <Grid>
-        <TextBlock x:Name="tblDeck" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,26,0,0"/>
-
         <!-- Community Cards Display -->
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <!-- Pot Display -->
@@ -79,6 +77,7 @@
 
         <!-- Current Player Display -->
         <TextBlock x:Name="tblCurrentPlayer" Grid.Row="3" Text="Current Player: " HorizontalAlignment="Center" />
+        <TextBlock x:Name="tblWinner" Grid.Row="3" Text="Winner: " HorizontalAlignment="Center" Margin="0,20,0,0"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10">
             <Button x:Name="btnCheck" Content="Check" Width="100" Margin="5" Click="btnCheck_Click" />

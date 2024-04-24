@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static poker_game.MainWindow;
+using System.Data.Entity;
 
 // things to fix:
 // add DetermineWinner()
@@ -26,7 +27,7 @@ namespace poker_game
     {
         private Deck deck;
         private Card[] communityCards;
-        private Player[] players;
+        private List<Player> players;
         private int pot;
         private int currentPlayerIndex;
         private int smallBlind;
@@ -34,7 +35,6 @@ namespace poker_game
         private int currentBet;
         private PlayerAction playerAction;
         private int checkCount;
-        private int startingChips = 1000;
         private int smallBlindIndex;
         private int bigBlindIndex;
 
@@ -42,14 +42,10 @@ namespace poker_game
         {
             InitializeComponent();
             communityCards = new Card[5];
-            players = new Player[]
+            using (var db = new GameData())
             {
-                new Player("Player 1", startingChips),
-                new Player("Player 2", startingChips),
-                new Player("Player 3", startingChips),
-                new Player("Player 4", startingChips),
-                new Player("You", startingChips)
-            };
+                players = db.Players.ToList();
+            }
             pot = 0;
             smallBlind = 10;
             bigBlind = 20;
@@ -66,16 +62,9 @@ namespace poker_game
             UpdatePlayerDisplays();
             UpdateChipDisplays();
             UpdateCurrentPlayerDisplay();
-            //UpdateDeckDisplay();
 
             await StartGame();
         }
-
-        private void UpdateDeckDisplay()
-        {
-            tblDeck.Text = $"Cards in Deck: {deck.Cards.Count}";
-        }
-
 
         private void DealCards()
         {
@@ -91,6 +80,11 @@ namespace poker_game
                 player.DealCard(deck.DealCard());
                 player.DealCard(deck.DealCard());
                 UpdatePlayerCardDisplay(player);
+            }
+
+            using (var context = new GameData())
+            {
+                context.SaveChanges();
             }
         }
 
@@ -165,13 +159,13 @@ namespace poker_game
             for (int i = 0; i < player.Hand.Count; i++)
             {
                 TextBlock cardTextBlock = GetPlayerCardTextBlock(player, i);
-                cardTextBlock.Text = player.Hand[i].UnicodeImage;
+                cardTextBlock.Text = player.Hand.ElementAt(i).UnicodeImage;
             }
         }
 
         private void UpdatePlayerDisplays()
         {
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < players.Count; i++)
             {
                 TextBlock playerTextBlock = GetPlayerTextBlock(i);
                 playerTextBlock.Text = players[i].Name;
@@ -180,7 +174,7 @@ namespace poker_game
 
         private void UpdateChipDisplays()
         {
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < players.Count; i++)
             {
                 TextBlock chipTextBlock = GetPlayerChipTextBlock(i);
                 chipTextBlock.Text = $"{players[i].Chips}";
@@ -195,13 +189,13 @@ namespace poker_game
 
         private void UpdatePlayerAction(Player player, string action)
         {
-            TextBlock actionTextBlock = GetPlayerActionTextBlock(Array.IndexOf(players, player));
+            TextBlock actionTextBlock = GetPlayerActionTextBlock(players.IndexOf(player));
             actionTextBlock.Text = action;
         }
 
         private void ClearPlayerActionTextBlocks()
         {
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < players.Count; i++)
             {
                 if (!players[i].Folded)
                 {
@@ -253,7 +247,7 @@ namespace poker_game
 
             do
             {
-                currentPlayerIndex = (currentPlayerIndex + 1) % players.Length;
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
             } while (players[currentPlayerIndex].Folded);
 
             UpdateCurrentPlayerDisplay();
@@ -464,7 +458,7 @@ namespace poker_game
             players[bigBlindIndex].BigBlind = true;
 
             // Set the current player to the player after the big blind
-            currentPlayerIndex = (bigBlindIndex + 1) % players.Length;
+            currentPlayerIndex = (bigBlindIndex + 1) % players.Count;
 
             // Pre-flop betting round
             await PerformBettingRound();
@@ -488,6 +482,8 @@ namespace poker_game
             await PerformBettingRound();
 
             // Determine the winner, add pot to his balance and  start again
+            DetermineWinner();
+            tblWinner.Text = $"Winner: {DetermineWinner().Name}";
         }
 
         private async void ResetGame()
@@ -498,7 +494,7 @@ namespace poker_game
             pot = 0;
 
             // Reset each player's folded status, hand, action text
-            for (int i = 0; i < players.Length; i++)
+            for (int i = 0; i < players.Count; i++)
             {
                 TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
                 actionTextBlock.Text = string.Empty;
@@ -510,8 +506,8 @@ namespace poker_game
             }
 
             // Rotate small blind, big blind indexes
-            smallBlindIndex = (smallBlindIndex + 1) % players.Length;
-            bigBlindIndex = (bigBlindIndex + 1) % players.Length;
+            smallBlindIndex = (smallBlindIndex + 1) % players.Count;
+            bigBlindIndex = (bigBlindIndex + 1) % players.Count;
 
             // Clear community cards displays, list
             ClearCommunityCards();
@@ -529,6 +525,32 @@ namespace poker_game
             // Start a new game
             await StartGame();
         }
+
+        private Player DetermineWinner()
+        {
+            HandEvaluator evaluator = new HandEvaluator();
+            Player winner = null;
+            int highestScore = -1;
+
+            foreach (Player player in players)
+            {
+                if (!player.Folded)
+                {
+                    List<Card> playerCards = new List<Card>(player.Hand);
+                    playerCards.AddRange(communityCards);
+                    int score = evaluator.EvaluateHand(playerCards);
+
+                    if (score > highestScore)
+                    {
+                        highestScore = score;
+                        winner = player;
+                    }
+                }
+            }
+
+            return winner;
+        }
+
 
         // Buttons click events
         private void BtnCall_Click(object sender, RoutedEventArgs e)
