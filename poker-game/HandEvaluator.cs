@@ -38,16 +38,20 @@ namespace poker_game
 
         private bool IsFourOfAKind(List<Card> cards)
         {
-            // Check if four cards have the same face
-            return cards[0].Face == cards[1].Face && cards[1].Face == cards[2].Face && cards[2].Face == cards[3].Face ||
-                   cards[1].Face == cards[2].Face && cards[2].Face == cards[3].Face && cards[3].Face == cards[4].Face;
+            // Count the occurrences of each face
+            var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
+
+            // Check if there is exactly one face that appears four times
+            return faceCounts.Any(fc => fc.Count == 4);
         }
 
         private bool IsFullHouse(List<Card> cards)
         {
-            // Check if three cards have the same face and the remaining two cards have the same face
-            return cards[0].Face == cards[1].Face && cards[1].Face == cards[2].Face && cards[3].Face == cards[4].Face ||
-                   cards[0].Face == cards[1].Face && cards[2].Face == cards[3].Face && cards[3].Face == cards[4].Face;
+            // Count the occurrences of each face
+            var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
+
+            // Check if there is a three-of-a-kind and a pair
+            return faceCounts.Count(fc => fc.Count == 3) == 1 && faceCounts.Count(fc => fc.Count == 2) == 1;
         }
 
         private bool IsFlush(List<Card> cards)
@@ -63,6 +67,11 @@ namespace poker_game
             {
                 if (cards[i].Face - cards[i + 1].Face != 1)
                 {
+                    // Check for a wheel straight
+                    if (i == cards.Count - 2 && cards[i + 1].Face == Face.Two && cards[0].Face == Face.Ace)
+                    {
+                        return true;
+                    }
                     return false;
                 }
             }
@@ -71,30 +80,31 @@ namespace poker_game
 
         private bool IsThreeOfAKind(List<Card> cards)
         {
-            // Check if three cards have the same face
-            return cards[0].Face == cards[1].Face && cards[1].Face == cards[2].Face ||
-                   cards[1].Face == cards[2].Face && cards[2].Face == cards[3].Face ||
-                   cards[2].Face == cards[3].Face && cards[3].Face == cards[4].Face;
+            // Count the occurrences of each face
+            var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
+
+            // Check if there is exactly one face that appears three times
+            return faceCounts.Any(fc => fc.Count == 3);
         }
 
         private bool IsTwoPair(List<Card> cards)
         {
-            // Check if there are two pairs of cards with the same face
-            return cards[0].Face == cards[1].Face && cards[2].Face == cards[3].Face ||
-                   cards[0].Face == cards[1].Face && cards[3].Face == cards[4].Face ||
-                   cards[1].Face == cards[2].Face && cards[3].Face == cards[4].Face;
+            // Count the occurrences of each face
+            var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
+
+            // Check if there are exactly two faces that appear twice
+            return faceCounts.Count(fc => fc.Count == 2) == 2;
         }
 
         private bool IsPair(List<Card> cards)
         {
-            // Check if two cards have the same face
-            return cards[0].Face == cards[1].Face ||
-                   cards[1].Face == cards[2].Face ||
-                   cards[2].Face == cards[3].Face ||
-                   cards[3].Face == cards[4].Face ||
-                   cards[4].Face == cards[5].Face ||
-                   cards[5].Face == cards[6].Face;
+            // Count the occurrences of each face
+            var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
+
+            // Check if there is exactly one face that appears twice
+            return faceCounts.Count(fc => fc.Count == 2) == 1;
         }
+
     }
 
 }

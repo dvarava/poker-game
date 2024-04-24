@@ -14,6 +14,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static poker_game.MainWindow;
 using System.Data.Entity;
+using System.Windows.Threading;
+using System.Reflection;
 
 // things to fix:
 // add DetermineWinner()
@@ -37,6 +39,25 @@ namespace poker_game
         private int checkCount;
         private int smallBlindIndex;
         private int bigBlindIndex;
+        private GameState currentState;
+
+        public enum PlayerAction
+        {
+            None,
+            Check,
+            Call,
+            Raise,
+            Fold
+        }
+
+        private enum GameState
+        {
+            Preflop,
+            Flop,
+            Turn,
+            River,
+            Showdown
+        }
 
         public MainWindow()
         {
@@ -261,15 +282,6 @@ namespace poker_game
             }
         }
 
-        public enum PlayerAction
-        {
-            None,
-            Check,
-            Call,
-            Raise,
-            Fold
-        }
-
         private async Task PerformBettingRound()
         {
             bool roundEnded = false;
@@ -447,6 +459,19 @@ namespace poker_game
         private async Task StartGame()
         {
             // Collect small blind and big blind
+            CollectBlinds();
+
+            // Set the current player to the player after the big blind
+            currentPlayerIndex = (bigBlindIndex + 1) % players.Count;
+
+            // Start the game loop
+            currentState = GameState.Preflop;
+            await GameLoop();
+        }
+
+        // Assign Small and Big blinds to players
+        private void CollectBlinds()
+        {
             players[smallBlindIndex].PlaceBet(smallBlind);
             UpdatePlayerAction(players[smallBlindIndex], $"Small Blind: {smallBlind}");
             pot += smallBlind;
@@ -456,36 +481,66 @@ namespace poker_game
             pot += bigBlind;
             currentBet = bigBlind;
             players[bigBlindIndex].BigBlind = true;
-
-            // Set the current player to the player after the big blind
-            currentPlayerIndex = (bigBlindIndex + 1) % players.Count;
-
-            // Pre-flop betting round
-            await PerformBettingRound();
-
-            // Reveal the Flop
-            RevealCommunityCards(0, 3);
-
-            // Flop betting round
-            await PerformBettingRound();
-
-            // Reveal the Turn
-            RevealCommunityCards(3, 1);
-
-            // Turn betting round
-            await PerformBettingRound();
-
-            // Reveal the River
-            RevealCommunityCards(4, 1);
-
-            // River betting round
-            await PerformBettingRound();
-
-            // Determine the winner, add pot to his balance and  start again
-            DetermineWinner();
-            tblWinner.Text = $"Winner: {DetermineWinner().Name}";
         }
 
+        // Game logic
+        private async Task GameLoop()
+        {
+            while (currentState != GameState.Showdown)
+            {
+                switch (currentState)
+                {
+                    case GameState.Preflop:
+                        await PerformBettingRound();
+                        AdvanceToNextState();
+                        break;
+                    case GameState.Flop:
+                        RevealCommunityCards(0, 3);
+                        await PerformBettingRound();
+                        AdvanceToNextState();
+                        break;
+                    case GameState.Turn:
+                        RevealCommunityCards(3, 1);
+                        await PerformBettingRound();
+                        AdvanceToNextState();
+                        break;
+                    case GameState.River:
+                        RevealCommunityCards(4, 1);
+                        await PerformBettingRound();
+                        AdvanceToNextState();
+                        break;
+                }
+            }
+
+            // Determine the winner and update the UI
+            Player winner = DetermineWinner();
+
+            await UpdateWinnerDisplay(winner);
+            winner.Chips += pot;
+            UpdateChipDisplays();
+
+            await Task.Delay(1000);
+
+            // Reset the game
+            ResetGame();
+        }
+
+        // Update winner display
+        private async Task UpdateWinnerDisplay(Player winner)
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                tblWinner.Text = $"Winner: {winner.Name}";
+            }, DispatcherPriority.Normal);
+        }
+
+        // Advance to the next game state
+        private void AdvanceToNextState()
+        {
+            currentState++;
+        }
+
+        // Reset the game when all players have folded or the game is over
         private async void ResetGame()
         {
             // Reset player action, each player's current bet, pot
@@ -526,6 +581,7 @@ namespace poker_game
             await StartGame();
         }
 
+        // Evaluate the hands of each player and determine the winner
         private Player DetermineWinner()
         {
             HandEvaluator evaluator = new HandEvaluator();
@@ -550,7 +606,6 @@ namespace poker_game
 
             return winner;
         }
-
 
         // Buttons click events
         private void BtnCall_Click(object sender, RoutedEventArgs e)

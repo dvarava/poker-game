@@ -8,5 +8,4 @@ public class GameData : DbContext
 
     public DbSet<Game> Games { get; set; }
     public DbSet<Player> Players { get; set; }
-    public DbSet<Card> Cards { get; set; }
 }

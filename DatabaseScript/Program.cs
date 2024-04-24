@@ -24,7 +24,6 @@ class Program
                 // Add the objects to the DbContext
                 context.Games.Add(game);
                 context.Players.Add(player);
-                context.Cards.Add(card);
 
                 // Save the changes to the database
                 context.SaveChanges();
