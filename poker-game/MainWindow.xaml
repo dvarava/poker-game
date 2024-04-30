@@ -5,85 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:poker_game"
         mc:Ignorable="d"
-        Title="Poker" Height="480" Width="700" Loaded="Window_Loaded">
+        Title="Poker" Height="480" Width="700">
     <Grid>
-        <!-- Community Cards Display -->
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <!-- Pot Display -->
-            <TextBlock x:Name="tblPot" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Pot: "/>
-            
-            <TextBlock Text="Community Cards:" HorizontalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="tblCommunityCard1" Margin="5" FontSize="80"/>
-                <TextBlock x:Name="tblCommunityCard2" Margin="5" FontSize="80"/>
-                <TextBlock x:Name="tblCommunityCard3" Margin="5" FontSize="80"/>
-                <TextBlock x:Name="tblCommunityCard4" Margin="5" FontSize="80"/>
-                <TextBlock x:Name="tblCommunityCard5" Margin="5" FontSize="80"/>
-            </StackPanel>
-        </StackPanel>
-
-        <Grid>
-            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,50,0,0">
-                <TextBlock x:Name="tblPlayer1"/>
-                <TextBlock x:Name="tblStackPlayer1Chips"/>
-                <TextBlock x:Name="tblPlayer1Action" Text="Player action"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard1" FontSize="60" Margin="5" />
-                    <TextBlock x:Name="tblPlayerCard2" FontSize="60" Margin="5" />
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,50,10,0">
-                <TextBlock x:Name="tblPlayer2"/>
-                <TextBlock x:Name="tblStackPlayer2Chips"/>
-                <TextBlock x:Name="tblPlayer2Action"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard3" FontSize="60" Margin="5" />
-                    <TextBlock x:Name="tblPlayerCard4" FontSize="60" Margin="5" />
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,50">
-                <TextBlock x:Name="tblPlayer3" Text="Player 3" />
-                <TextBlock x:Name="tblStackPlayer3Chips"/>
-                <TextBlock x:Name="tblPlayer3Action"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard5" FontSize="60" Margin="5" />
-                    <TextBlock x:Name="tblPlayerCard6" FontSize="60" Margin="5" />
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,50">
-                <TextBlock x:Name="tblPlayer4" Text="Player 4" />
-                <TextBlock x:Name="tblStackPlayer4Chips"/>
-                <TextBlock x:Name="tblPlayer4Action"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard7" FontSize="60" Margin="5" />
-                    <TextBlock x:Name="tblPlayerCard8" FontSize="60" Margin="5" />
-                </StackPanel>
-            </StackPanel>
-        </Grid>
-
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10">
-            <TextBlock x:Name="tblPlayer5"/>
-            <TextBlock x:Name="tblStackPlayer5Chips"/>
-            <TextBlock x:Name="tblPlayer5Action"/>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="tblYourCard1" FontSize="70" Margin="5" />
-                <TextBlock x:Name="tblYourCard2" FontSize="70" Margin="5" />
-            </StackPanel>
-        </StackPanel>
-
-
-        <!-- Current Player Display -->
-        <TextBlock x:Name="tblCurrentPlayer" Grid.Row="3" Text="Current Player: " HorizontalAlignment="Center" />
-        <TextBlock x:Name="tblWinner" Grid.Row="3" Text="Winner: " HorizontalAlignment="Center" Margin="0,20,0,0"/>
-
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10">
-            <Button x:Name="btnCheck" Content="Check" Width="100" Margin="5" Click="btnCheck_Click" />
-            <Button x:Name="btnCall" Content="Call" Width="100" Margin="5" Click="BtnCall_Click" />
-            <Button x:Name="btnRaise" Content="Raise" Width="100" Margin="5" Click="BtnRaise_Click" />
-            <Button x:Name="btnFold" Content="Fold" Width="100" Margin="5" Click="BtnFold_Click" />
-        </StackPanel>
+        <Button x:Name="btnStartGame" Content="Start Game" HorizontalAlignment="Center" VerticalAlignment="Center" Click="btnStartGame_Click" />
+        <Frame x:Name="Pages" NavigationUIVisibility="Hidden" />
     </Grid>
 </Window>

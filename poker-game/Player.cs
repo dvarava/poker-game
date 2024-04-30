@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,10 +15,11 @@ namespace poker_game
         public int CurrentBet { get; set; }
         public bool Folded { get; set; }
         public bool BigBlind { get; set; }
+        [NotMapped]
         public List<Card> Hand { get; } = new List<Card>();
 
         public int GameId { get; set; } // Foreign key
-        public Game Game { get; set; } // Navigation property
+        public virtual Game Game { get; set; } // Navigation property
 
         public Player() { }
         public Player(string name, int chips)

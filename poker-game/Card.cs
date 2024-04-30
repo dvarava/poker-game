@@ -33,13 +33,9 @@ namespace poker_game
 
     public class Card
     {
-        public int CardId { get; set; }
         public Suit Suit { get; set; }
         public Face Face { get; set; }
         public string UnicodeImage { get; set; }
-
-        public int PlayerId { get; set; } // Foreign key
-        public Player Player { get; set; } // Navigation property
 
 
         // Unicode images for each card
