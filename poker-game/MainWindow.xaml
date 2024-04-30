@@ -5,9 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:poker_game"
         mc:Ignorable="d"
-        Title="Poker" Height="480" Width="700">
+        Title="Poker Game" Height="600" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="#004800"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/poker-game;component/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    
     <Grid>
-        <Button x:Name="btnStartGame" Content="Start Game" HorizontalAlignment="Center" VerticalAlignment="Center" Click="btnStartGame_Click" />
-        <Frame x:Name="Pages" NavigationUIVisibility="Hidden" />
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="Poker Game" HorizontalAlignment="Center" Margin="0 0 0 40" Style="{StaticResource PokerTitleTextStyle}"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 0 0 20">
+                <TextBlock Text="Name:" FontSize="24" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0 0 10 0" Style="{StaticResource PokerLabelTextStyle}"/>
+                <TextBox x:Name="txtPlayerName" Width="300" Style="{StaticResource PokerTextBoxStyle}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="Chips:" FontSize="24" Foreground="#FFFFFF" VerticalAlignment="Center" Margin="0 0 10 0" Style="{StaticResource PokerLabelTextStyle}"/>
+                <TextBox x:Name="txtChipCount" Width="150" Style="{StaticResource PokerTextBoxStyle}"/>
+            </StackPanel>
+
+            <Button x:Name="btnStartGame" Content="Start Game" Width="200" Margin="0 40 0 0" Click="btnStartGame_Click" Style="{StaticResource PokerButtonStyle}"/>
+        </StackPanel>
     </Grid>
 </Window>

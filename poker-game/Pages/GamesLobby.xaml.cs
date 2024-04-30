@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using poker_game.Pages;
+using System.Data.Entity;
 
 namespace poker_game.Pages
 {
@@ -23,24 +24,32 @@ namespace poker_game.Pages
     public partial class GamesLobby : Page
     {
         public ObservableCollection<GameViewModel> Games { get; set; }
+        public static int SelectedGameId { get; set; }
+        public string PlayerName { get; set; }
+        public int ChipCount { get; set; }
 
-        public GamesLobby()
+        public GamesLobby(string playerName, int chipCount)
         {
             InitializeComponent();
             Games = new ObservableCollection<GameViewModel>();
             LoadGamesFromDatabase();
             DataContext = this;
+            PlayerName = playerName;
+            ChipCount = chipCount;
         }
 
         private void LoadGamesFromDatabase()
         {
-            using (var dbContext = new GameData())
+            using (var db = new GameData())
             {
-                var games = dbContext.Games
+                var games = db.Games
+                    .Include(g => g.Players)
                     .ToList()
                     .Select(g => new GameViewModel
                     {
                         GameId = g.GameId,
+                        GameName = g.GameName,
+                        GameImage = g.GameImage,
                         Players = string.Join(", ", g.Players.Select(p => p.Name))
                     });
 
@@ -51,9 +60,39 @@ namespace poker_game.Pages
             }
         }
 
+
         private void JoinGame_Click(object sender, RoutedEventArgs e)
         {
-            Pages.Content = new Pages.Game();
+            var selectedGame = (GameViewModel)GameListView.SelectedItem;
+            SelectedGameId = selectedGame.GameId;
+
+            using (var dbContext = new GameData())
+            {
+                var game = dbContext.Games
+                    .Include(g => g.Players)
+                    .FirstOrDefault(g => g.GameId == selectedGame.GameId);
+
+                if (game != null)
+                {
+                    var player = new Player
+                    {
+                        Name = PlayerName,
+                        Chips = ChipCount,
+                        GameId = selectedGame.GameId
+                    };
+
+                    dbContext.Players.Add(player);
+                    dbContext.SaveChanges();
+
+                    List<Player> gamePlayers = game.Players.ToList();
+                    Game gamePage = new Game(selectedGame.GameId, selectedGame.GameName, gamePlayers);
+                    NavigationService.Navigate(gamePage);
+                }
+                else
+                {
+                    MessageBox.Show("The selected game was not found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         public class GameViewModel

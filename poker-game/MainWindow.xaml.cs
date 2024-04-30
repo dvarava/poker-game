@@ -16,9 +16,7 @@ using static poker_game.MainWindow;
 using System.Data.Entity;
 using System.Windows.Threading;
 using System.Reflection;
-
-// things to fix:
-// add DetermineWinner()
+using poker_game.Pages;
 
 namespace poker_game
 {
@@ -27,6 +25,9 @@ namespace poker_game
     /// </summary>
     public partial class MainWindow : Window
     {
+        public string PlayerName { get; set; }
+        public int ChipCount { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -34,7 +35,18 @@ namespace poker_game
 
         private void btnStartGame_Click(object sender, RoutedEventArgs e)
         {
-            Pages.Content = new Pages.GamesLobby();
+            if (string.IsNullOrWhiteSpace(txtPlayerName.Text) || string.IsNullOrWhiteSpace(txtChipCount.Text))
+            {
+                MessageBox.Show("Please enter a player name and chip count.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            PlayerName = txtPlayerName.Text;
+            ChipCount = int.Parse(txtChipCount.Text);
+
+            Frame frame = new Frame();
+            frame.Navigate(new GamesLobby(PlayerName, ChipCount));
+            Content = frame;
         }
     }
 }

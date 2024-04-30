@@ -53,14 +53,11 @@ namespace poker_game.Pages
             River,
             Showdown
         }
-        public Game()
+        public Game(int selectedGameId, string gameName, List<Player> gamePlayers)
         {
             InitializeComponent();
             communityCards = new Card[5];
-            using (var db = new GameData())
-            {
-                players = db.Players.ToList();
-            }
+            players = gamePlayers;
             pot = 0;
             smallBlind = 10;
             bigBlind = 20;
@@ -122,11 +119,11 @@ namespace poker_game.Pages
         {
             switch (player.Name)
             {
-                case "Player 1": return cardIndex == 0 ? tblPlayerCard1 : tblPlayerCard2;
-                case "Player 2": return cardIndex == 0 ? tblPlayerCard3 : tblPlayerCard4;
-                case "Player 3": return cardIndex == 0 ? tblPlayerCard5 : tblPlayerCard6;
-                case "Player 4": return cardIndex == 0 ? tblPlayerCard7 : tblPlayerCard8;
-                case "You": return cardIndex == 0 ? tblYourCard1 : tblYourCard2;
+                case var name when name == players[0].Name: return cardIndex == 0 ? tblPlayerCard1 : tblPlayerCard2;
+                case var name when name == players[1].Name: return cardIndex == 0 ? tblPlayerCard3 : tblPlayerCard4;
+                case var name when name == players[2].Name: return cardIndex == 0 ? tblPlayerCard5 : tblPlayerCard6;
+                case var name when name == players[3].Name: return cardIndex == 0 ? tblPlayerCard7 : tblPlayerCard8;
+                case var name when name == players[4].Name: return cardIndex == 0 ? tblYourCard1 : tblYourCard2;
                 default: throw new ArgumentException("Invalid player name.", nameof(player));
             }
         }
@@ -510,23 +507,14 @@ namespace poker_game.Pages
             // Determine the winner and update the UI
             Player winner = DetermineWinner();
 
-            await UpdateWinnerDisplay(winner);
             winner.Chips += pot;
             UpdateChipDisplays();
 
+            string message = $"The winner is {winner.Name}, with {pot} chips win!";
+            MessageBox.Show(message, "Winner", MessageBoxButton.OK, MessageBoxImage.Information);
             await Task.Delay(1000);
-
             // Reset the game
             ResetGame();
-        }
-
-        // Update winner display
-        private async Task UpdateWinnerDisplay(Player winner)
-        {
-            await Dispatcher.InvokeAsync(() =>
-            {
-                tblWinner.Text = $"Winner: {winner.Name}";
-            }, DispatcherPriority.Normal);
         }
 
         // Advance to the next game state
@@ -621,6 +609,23 @@ namespace poker_game.Pages
         private void btnCheck_Click(object sender, RoutedEventArgs e)
         {
             playerAction = PlayerAction.Check;
+        }
+
+        private void BtnLeaveGame_Click(object sender, RoutedEventArgs e)
+        {
+            // For simplicity, I delete the last player in the list, which is the joined player
+            Player joinedPlayer = players[4];
+
+            using (var dbContext = new GameData())
+            {
+                dbContext.Players.Attach(joinedPlayer);
+                dbContext.Players.Remove(joinedPlayer);
+                dbContext.SaveChanges();
+            }
+
+            MainWindow mainWindow = new MainWindow();
+            Window.GetWindow(this).Close();
+            mainWindow.Show();
         }
     }
 }
