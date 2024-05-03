@@ -23,6 +23,10 @@ class Program
                 game2.GameName = "Game 2";
                 game2.GameImage = "../Images/GameImages/game2.jpg";
 
+                var game3 = new Game();
+                game3.GameName = "Game 3";
+                game3.GameImage = "../Images/GameImages/game3.jpg";
+
                 var p1 = new Player("Player 1", 1000);
                 var p2 = new Player("Player 2", 1400);
                 var p3 = new Player("Player 3", 1000);
@@ -32,6 +36,12 @@ class Program
                 var p6 = new Player("Player 6", 1200);
                 var p7 = new Player("Player 7", 2000);
                 var p8 = new Player("Player 8", 1600);
+                var p9 = new Player("Player 9", 1100);
+
+                var p10 = new Player("Player 10", 1700);
+                var p11 = new Player("Player 11", 2100);
+                var p12 = new Player("Player 12", 1000);
+                var p13 = new Player("Player 13", 1900);
 
                 p1.Game = game1;
                 p2.Game = game1;
@@ -42,10 +52,17 @@ class Program
                 p6.Game = game2;
                 p7.Game = game2;
                 p8.Game = game2;
+                p9.Game = game2;
+
+                p10.Game = game3;
+                p11.Game = game3;
+                p12.Game = game3;
+                p13.Game = game3;
 
                 // Add the objects to the DbContext
                 context.Games.Add(game1);
                 context.Games.Add(game2);
+                context.Games.Add(game3);
 
                 context.Players.Add(p1);
                 context.Players.Add(p2);
@@ -56,6 +73,12 @@ class Program
                 context.Players.Add(p6);
                 context.Players.Add(p7);
                 context.Players.Add(p8);
+                context.Players.Add(p9);
+
+                context.Players.Add(p10);
+                context.Players.Add(p11);
+                context.Players.Add(p12);
+                context.Players.Add(p13);
 
                 // Save the changes to the database
                 context.SaveChanges();
