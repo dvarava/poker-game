@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Data.Entity;
+using System.IO;
 
 namespace poker_game.Pages
 {
@@ -505,14 +506,26 @@ namespace poker_game.Pages
             }
 
             // Determine the winner and update the UI
-            Player winner = DetermineWinner();
+            Player winner = DetermineWinner().Winner;
+            string winningCombination = DetermineWinner().WinningCombination;
 
             winner.Chips += pot;
             UpdateChipDisplays();
 
-            string message = $"The winner is {winner.Name}, with {pot} chips win!";
+            string message = $"The winner is {winner.Name}, with {winningCombination} and {pot} chips win!";
             MessageBox.Show(message, "Winner", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Write the winner's information to a text file (Name, date of win, pot amount won)
+            string winnerInfo = $"{winner.Name} won {pot} chips witht {winningCombination} on {DateTime.Now.ToString("yyyy-MM-dd")}";
+            string filePath = "\\\\Mac\\Home\\Documents\\poker-game\\poker-game\\winner_log.txt";
+
+            using (StreamWriter writer = new StreamWriter(filePath, true))
+            {
+                await writer.WriteLineAsync(winnerInfo);
+            }
+
             await Task.Delay(1000);
+
             // Reset the game
             ResetGame();
         }
@@ -565,10 +578,11 @@ namespace poker_game.Pages
         }
 
         // Evaluate the hands of each player and determine the winner
-        private Player DetermineWinner()
+        private GameResult DetermineWinner()
         {
             HandEvaluator evaluator = new HandEvaluator();
             Player winner = null;
+            string winningCombination = string.Empty;
             int highestScore = -1;
 
             foreach (Player player in players)
@@ -577,17 +591,22 @@ namespace poker_game.Pages
                 {
                     List<Card> playerCards = new List<Card>(player.Hand);
                     playerCards.AddRange(communityCards);
-                    int score = evaluator.EvaluateHand(playerCards);
+                    (int score, string combination) = evaluator.EvaluateHand(playerCards);
 
                     if (score > highestScore)
                     {
                         highestScore = score;
                         winner = player;
+                        winningCombination = combination;
                     }
                 }
             }
 
-            return winner;
+            return new GameResult
+            {
+                Winner = winner,
+                WinningCombination = winningCombination
+            };
         }
 
         // Buttons click events

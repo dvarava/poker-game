@@ -8,20 +8,20 @@ namespace poker_game
 {
     public class HandEvaluator
     {
-        public int EvaluateHand(List<Card> cards)
+        public (int score, string combination) EvaluateHand(List<Card> cards)
         {
             cards.Sort((x, y) => y.Face.CompareTo(x.Face)); // Sort cards by face in descending order
 
-            if (IsRoyalFlush(cards)) return 10000;
-            if (IsStraightFlush(cards)) return 9000 + (int)cards[0].Face;
-            if (IsFourOfAKind(cards)) return 8000 + (int)cards[1].Face;
-            if (IsFullHouse(cards)) return 7000 + (int)cards[2].Face;
-            if (IsFlush(cards)) return 6000 + (int)cards[0].Face;
-            if (IsStraight(cards)) return 5000 + (int)cards[0].Face;
-            if (IsThreeOfAKind(cards)) return 4000 + (int)cards[2].Face;
-            if (IsTwoPair(cards)) return 3000 + (int)cards[1].Face + (int)cards[3].Face;
-            if (IsPair(cards)) return 2000 + (int)cards[1].Face;
-            return 1000 + (int)cards[0].Face; // High card
+            if (IsRoyalFlush(cards)) return (10000, "Royal Flush");
+            if (IsStraightFlush(cards)) return (9000 + (int)cards[0].Face, "Straight Flush");
+            if (IsFourOfAKind(cards)) return (8000 + (int)cards[1].Face, "Four of a Kind");
+            if (IsFullHouse(cards)) return (7000 + (int)cards[2].Face, "Full House");
+            if (IsFlush(cards)) return (6000 + (int)cards[0].Face, "Flush");
+            if (IsStraight(cards)) return (5000 + (int)cards[0].Face, "Straight");
+            if (IsThreeOfAKind(cards)) return (4000 + (int)cards[2].Face, "Three of a Kind");
+            if (IsTwoPair(cards)) return (3000 + (int)cards[1].Face + (int)cards[3].Face, "Two Pair");
+            if (IsPair(cards)) return (2000 + (int)cards[1].Face, "Pair");
+            return (1000 + (int)cards[0].Face, "High Card"); // High card
         }
 
         private bool IsRoyalFlush(List<Card> cards)
