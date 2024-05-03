@@ -100,7 +100,6 @@ namespace poker_game
             // Check if there is exactly one face that appears twice
             return faceCounts.Count(fc => fc.Count == 2) == 1;
         }
-
     }
 
 }

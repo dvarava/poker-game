@@ -121,4 +121,33 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+
+    <!-- Raise Amount Dialog Styles -->
+    <Style x:Key="RaiseAmountLabelStyle" TargetType="Label">
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,10,0,5" />
+    </Style>
+
+    <Style x:Key="RaiseAmountTextBoxStyle" TargetType="TextBox">
+        <Setter Property="BorderBrush" Value="#b31c1e" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="3" />
+    </Style>
+
+    <Style x:Key="RaiseAmountButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#FF008000" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Padding" Value="5" />
+        
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#b31c1e" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

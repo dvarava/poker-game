@@ -1,16 +1,32 @@
 ﻿<Window x:Class="poker_game.RaiseAmountDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Raise Amount" Height="150" Width="300">
+        Title="Raise Amount" Height="150" Width="300"
+        Background="DarkRed">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/poker-game;component/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Label Content="Enter the amount you want to raise:" Grid.Row="0"/>
+
+        <Label Content="Enter the amount you want to raise:"
+               Grid.Row="0"
+               Style="{StaticResource RaiseAmountLabelStyle}"/>
+
         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
-            <TextBox x:Name="txtRaiseAmount" Width="100" Margin="5"/>
-            <Button x:Name="btnOk" Content="OK" Width="50" Margin="5" Click="BtnOk_Click"/>
+            <TextBox x:Name="txtRaiseAmount" Width="100" Margin="5"
+                     Style="{StaticResource RaiseAmountTextBoxStyle}"/>
+            <Button x:Name="btnOk" Content="OK" Width="50" Margin="5"
+                    Click="BtnOk_Click"
+                    Style="{StaticResource RaiseAmountButtonStyle}"/>
         </StackPanel>
     </Grid>
 </Window>
