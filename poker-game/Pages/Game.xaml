@@ -5,8 +5,9 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:poker_game.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="800" d:DesignWidth="1000"
-      Title="Game" Loaded="Page_Loaded">
+      d:DesignHeight="650" d:DesignWidth="900"
+      Title="Game" Loaded="Page_Loaded"
+      ShowsNavigationUI="False">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -17,6 +18,10 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="\\Mac\Home\Documents\poker-game\poker-game\Images\MainBackgrounds\bg1.jpg" Stretch="UniformToFill"/>
+        </Grid.Background>
+        
         <!-- Community Cards Display -->
         <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
             <!-- Pot Display -->
@@ -38,8 +43,8 @@
                 <TextBlock x:Name="tblStackPlayer1Chips" Style="{StaticResource PokerChipCountTextStyle}" />
                 <TextBlock x:Name="tblPlayer1Action" Text="Player action" Style="{StaticResource PokerPlayerActionTextStyle}" />
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard1" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
-                    <TextBlock x:Name="tblPlayerCard2" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard1" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard2" Style="{StaticResource PokerCardTextStyle}" />
                 </StackPanel>
             </StackPanel>
 
@@ -48,8 +53,8 @@
                 <TextBlock x:Name="tblStackPlayer2Chips" Style="{StaticResource PokerChipCountTextStyle}" />
                 <TextBlock x:Name="tblPlayer2Action" Style="{StaticResource PokerPlayerActionTextStyle}" />
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard3" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
-                    <TextBlock x:Name="tblPlayerCard4" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard3" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard4" Style="{StaticResource PokerCardTextStyle}" />
                 </StackPanel>
             </StackPanel>
 
@@ -58,8 +63,8 @@
                 <TextBlock x:Name="tblStackPlayer3Chips" Style="{StaticResource PokerChipCountTextStyle}" />
                 <TextBlock x:Name="tblPlayer3Action" Style="{StaticResource PokerPlayerActionTextStyle}" />
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard5" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
-                    <TextBlock x:Name="tblPlayerCard6" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard5" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard6" Style="{StaticResource PokerCardTextStyle}" />
                 </StackPanel>
             </StackPanel>
 
@@ -68,8 +73,8 @@
                 <TextBlock x:Name="tblStackPlayer4Chips" Style="{StaticResource PokerChipCountTextStyle}" />
                 <TextBlock x:Name="tblPlayer4Action" Style="{StaticResource PokerPlayerActionTextStyle}" />
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="tblPlayerCard7" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
-                    <TextBlock x:Name="tblPlayerCard8" FontSize="60" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard7" Style="{StaticResource PokerCardTextStyle}" />
+                    <TextBlock x:Name="tblPlayerCard8" Style="{StaticResource PokerCardTextStyle}" />
                 </StackPanel>
             </StackPanel>
         </Grid>
@@ -79,8 +84,8 @@
             <TextBlock x:Name="tblStackPlayer5Chips" Style="{StaticResource PokerChipCountTextStyle}" />
             <TextBlock x:Name="tblPlayer5Action" Style="{StaticResource PokerPlayerActionTextStyle}" />
             <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="tblYourCard1" FontSize="70" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
-                <TextBlock x:Name="tblYourCard2" FontSize="70" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
+                <TextBlock x:Name="tblYourCard1" FontSize="90" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
+                <TextBlock x:Name="tblYourCard2" FontSize="90" Margin="5" Style="{StaticResource PokerCardTextStyle}" />
             </StackPanel>
         </StackPanel>
 
@@ -92,7 +97,7 @@
             <Button x:Name="btnCall" Content="Call" Width="100" Margin="5" Click="BtnCall_Click" Style="{StaticResource PokerButtonStyle}" />
             <Button x:Name="btnRaise" Content="Raise" Width="100" Margin="5" Click="BtnRaise_Click" Style="{StaticResource PokerButtonStyle}" />
             <Button x:Name="btnFold" Content="Fold" Width="100" Margin="5" Click="BtnFold_Click" Style="{StaticResource PokerButtonStyle}" />
-            <Button x:Name="btnLeaveGame" Content="Leave Game" Width="100" Margin="5" Click="BtnLeaveGame_Click" Style="{StaticResource PokerLeaveGameButtonStyle}" />
+            <Button x:Name="btnLeaveGame" Content="Leave" Width="100" Margin="5" Click="BtnLeaveGame_Click" Style="{StaticResource PokerLeaveGameButtonStyle}" />
         </StackPanel>
     </Grid>
 </Page>

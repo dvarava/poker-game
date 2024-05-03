@@ -47,7 +47,6 @@ namespace poker_game
 
         private bool IsFullHouse(List<Card> cards)
         {
-            // Count the occurrences of each face
             var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
 
             // Check if there is a three-of-a-kind and a pair
@@ -80,7 +79,6 @@ namespace poker_game
 
         private bool IsThreeOfAKind(List<Card> cards)
         {
-            // Count the occurrences of each face
             var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
 
             // Check if there is exactly one face that appears three times
@@ -89,7 +87,6 @@ namespace poker_game
 
         private bool IsTwoPair(List<Card> cards)
         {
-            // Count the occurrences of each face
             var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
 
             // Check if there are exactly two faces that appear twice
@@ -98,7 +95,6 @@ namespace poker_game
 
         private bool IsPair(List<Card> cards)
         {
-            // Count the occurrences of each face
             var faceCounts = cards.GroupBy(c => c.Face).Select(group => new { Face = group.Key, Count = group.Count() });
 
             // Check if there is exactly one face that appears twice

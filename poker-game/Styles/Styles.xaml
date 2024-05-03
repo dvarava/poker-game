@@ -24,7 +24,7 @@
 
     <!-- Label Text Style -->
     <Style x:Key="PokerLabelTextStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontSize" Value="20" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="Margin" Value="0 0 10 0" />
     </Style>
@@ -32,9 +32,9 @@
     <!-- TextBox Style -->
     <Style x:Key="PokerTextBoxStyle" TargetType="TextBox">
         <Setter Property="FontSize" Value="18" />
-        <Setter Property="Background" Value="#006600" />
-        <Setter Property="Foreground" Value="#FFFFFF" />
-        <Setter Property="BorderBrush" Value="#00FF00" />
+        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="Foreground" Value="#000" />
+        <Setter Property="BorderBrush" Value="#b31c1e" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="Padding" Value="5" />
     </Style>
@@ -43,7 +43,7 @@
     <Style x:Key="PokerButtonStyle" TargetType="Button">
         <Setter Property="FontSize" Value="24" />
         <Setter Property="Foreground" Value="#FFFFFF" />
-        <Setter Property="Background" Value="#00FF00" />
+        <Setter Property="Background" Value="#b31c1e" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Padding" Value="10,5" />
         <Setter Property="FontWeight" Value="Bold" />
@@ -60,7 +60,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#00CC00" />
+                <Setter Property="Background" Value="#973a43" />
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -100,6 +100,8 @@
     <!-- Card Text Style -->
     <Style x:Key="PokerCardTextStyle" TargetType="TextBlock">
         <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontSize" Value="75" />
+        <Setter Property="Margin" Value="5" />
     </Style>
 
     <!-- Pot Text Style -->
@@ -111,11 +113,11 @@
 
     <!-- Leave Game Button Style -->
     <Style x:Key="PokerLeaveGameButtonStyle" TargetType="Button" BasedOn="{StaticResource PokerButtonStyle}">
-        <Setter Property="Background" Value="#FF0000" />
+        <Setter Property="Background" Value="#0274b6" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#FF4D4D" />
+                <Setter Property="Background" Value="#51a0bb" />
             </Trigger>
         </Style.Triggers>
     </Style>

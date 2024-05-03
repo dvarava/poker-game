@@ -41,12 +41,31 @@ namespace poker_game
                 return;
             }
 
+            if (!int.TryParse(txtChipCount.Text, out int chipCount))
+            {
+                MessageBox.Show("Please enter a valid number for the chip count.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             PlayerName = txtPlayerName.Text;
-            ChipCount = int.Parse(txtChipCount.Text);
+            ChipCount = chipCount;
 
             Frame frame = new Frame();
             frame.Navigate(new GamesLobby(PlayerName, ChipCount));
             Content = frame;
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            using (var dbContext = new GameData())
+            {
+                var joinedPlayer = dbContext.Players.FirstOrDefault(p => p.Name == PlayerName);
+                if (joinedPlayer != null)
+                {
+                    dbContext.Players.Remove(joinedPlayer);
+                    dbContext.SaveChanges();
+                }
+            }
         }
     }
 }

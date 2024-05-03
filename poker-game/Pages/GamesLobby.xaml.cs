@@ -74,6 +74,12 @@ namespace poker_game.Pages
 
                 if (game != null)
                 {
+                    if (game.Players.Count >= 5)
+                    {
+                        MessageBox.Show("The selected game is already full. Please choose another game.", "Game Full", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
+
                     var player = new Player
                     {
                         Name = PlayerName,

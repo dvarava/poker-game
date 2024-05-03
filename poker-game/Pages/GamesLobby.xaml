@@ -5,8 +5,9 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:poker_game.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="800" d:DesignWidth="1000"
-      Title="GamesLobby">
+      d:DesignHeight="650" d:DesignWidth="900"
+      Title="GamesLobby"
+      ShowsNavigationUI="False">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -17,13 +18,17 @@
     </Page.Resources>
 
     <Grid>
+        <Grid.Background>
+            <ImageBrush ImageSource="\\Mac\Home\Documents\poker-game\poker-game\Images\MainBackgrounds\bg1.jpg" Stretch="UniformToFill"/>
+        </Grid.Background>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Poker Game Lobby" Style="{StaticResource PokerTitleTextStyle}" Margin="10" />
+        <TextBlock Grid.Row="0" Text="Poker Games Lobby" Style="{StaticResource PokerTitleTextStyle}" Margin="10" />
 
         <ListView Grid.Row="1" x:Name="GameListView" ItemsSource="{Binding Games}" SelectionMode="Single" Margin="10">
             <ListView.ItemTemplate>
