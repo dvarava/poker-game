@@ -253,9 +253,17 @@ namespace poker_game.Pages
         private void NextPlayer()
         {
             // Check if all players have folded
-            if (players.All(p => p.Folded))
+            if (players.Count(p => !p.Folded) == 1)
             {
-                ResetGame(); // Restart the game with new cards
+                // Only one player left, determine the winner and reset the game
+                Player winner = players.First(p => !p.Folded);
+                winner.Chips += pot;
+                UpdateChipDisplays();
+
+                string message = $"The winner is {winner.Name} with {pot} chips win!";
+                MessageBox.Show(message, "Winner", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                ResetGame();
                 return;
             }
 
@@ -278,8 +286,6 @@ namespace poker_game.Pages
         private async Task PerformBettingRound()
         {
             bool roundEnded = false;
-            int activePlayerCount = players.Count(p => !p.Folded && p.Chips > 0);
-            int actedPlayerCount = 0;
 
             do
             {
@@ -291,9 +297,7 @@ namespace poker_game.Pages
 
                 // Make a move
                 await TakeTurn(currentPlayerIndex);
-                actedPlayerCount++;
-
-                if (IsBettingRoundOver() || actedPlayerCount == activePlayerCount)
+                if (IsBettingRoundOver())
                 {
                     roundEnded = true;
                 }
@@ -363,22 +367,30 @@ namespace poker_game.Pages
                         }
                     }
                     break;
-
                 case PlayerAction.Raise:
-                    int raiseAmount = GetRaiseAmount(callAmount);
-                    if (raiseAmount > callAmount && raiseAmount <= player.Chips)
+                    while (true)
                     {
-                        player.PlaceBet(raiseAmount - player.CurrentBet);
-                        pot += raiseAmount;
-                        currentBet = raiseAmount; // Update the current bet
-                        UpdatePlayerAction(player, $"Raised to {raiseAmount}");
-                        UpdateChipDisplays();
-                        UpdatePotDisplay();
-                        NextPlayer();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Invalid raise amount. It must be more than the current bet and less than your chips.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        int raiseAmount = GetRaiseAmount(callAmount);
+                        if (raiseAmount > callAmount && raiseAmount <= player.Chips)
+                        {
+                            player.PlaceBet(raiseAmount - player.CurrentBet);
+                            pot += raiseAmount;
+                            currentBet = raiseAmount; // Update the current bet
+                            UpdatePlayerAction(player, $"Raised to {raiseAmount}");
+                            UpdateChipDisplays();
+                            UpdatePotDisplay();
+                            NextPlayer();
+                            break;
+                        }
+                        else if (raiseAmount == callAmount)
+                        {
+                            // User canceled the dialog
+                            break;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Invalid raise amount. It must be more than the current bet and less than your chips.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
                     }
                     break;
                 case PlayerAction.Fold:
@@ -398,7 +410,6 @@ namespace poker_game.Pages
             int currentBetAmount = currentBet;
             bool allCalledOrChecked = true;
             int activePlayers = players.Count(p => !p.Folded);
-            int allInPlayers = players.Count(p => !p.Folded && p.Chips == 0);
 
             if (currentBetAmount == 0)
             {
@@ -417,9 +428,9 @@ namespace poker_game.Pages
                         }
                         else
                         {
-                            if (player.CurrentBet < currentBetAmount && player.Chips > 0)
+                            if (player.CurrentBet < currentBetAmount)
                             {
-                                // If at least one player hasn't called the current bet and still has chips
+                                // If at least one player hasn't called the current bet
                                 allCalledOrChecked = false;
                                 break;
                             }
@@ -435,12 +446,6 @@ namespace poker_game.Pages
                 }
             }
 
-            // If all active players are all-in, the betting round is over
-            if (allInPlayers == activePlayers)
-            {
-                allCalledOrChecked = true;
-            }
-
             return allCalledOrChecked;
         }
 
@@ -452,16 +457,15 @@ namespace poker_game.Pages
 
         private int GetRaiseAmount(int callAmount)
         {
-            int raiseAmount = callAmount;
-
             RaiseAmountDialog dialog = new RaiseAmountDialog();
             if (dialog.ShowDialog() == true)
             {
-                raiseAmount = dialog.RaiseAmount;
+                return dialog.RaiseAmount;
             }
-            dialog.Close();
-
-            return raiseAmount;
+            else
+            {
+                return callAmount;
+            }
         }
 
         private async Task StartGame()
@@ -471,6 +475,7 @@ namespace poker_game.Pages
 
             // Set the current player to the player after the big blind
             currentPlayerIndex = (bigBlindIndex + 1) % players.Count;
+            UpdateCurrentPlayerDisplay();
 
             // Start the game loop
             currentState = GameState.Preflop;
@@ -541,7 +546,6 @@ namespace poker_game.Pages
 
             await Task.Delay(1000);
 
-            // Reset the game
             ResetGame();
         }
 
@@ -570,7 +574,6 @@ namespace poker_game.Pages
                 player.Folded = false;
                 player.Hand.Clear();
 
-                // Just for simplicity, reset the player's chip count to 1000 if they have less than or equal to 0 chips. In the real game, I would add a pop up window that would ask player if he wants to add chips or leave.
                 if (player.Chips <= 0)
                 {
                     player.Chips = 1000;
@@ -595,7 +598,6 @@ namespace poker_game.Pages
             UpdatePotDisplay();
             UpdateChipDisplays();
 
-            // Start a new game
             await StartGame();
         }
 

@@ -32,6 +32,7 @@ namespace poker_game
             {
                 RaiseAmount = raiseAmount;
                 DialogResult = true;
+                Close();
             }
             else
             {

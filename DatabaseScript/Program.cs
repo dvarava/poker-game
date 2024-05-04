@@ -36,7 +36,7 @@ class Program
                 var p6 = new Player("Player 6", 1200);
                 var p7 = new Player("Player 7", 2000);
                 var p8 = new Player("Player 8", 1600);
-                var p9 = new Player("Player 9", 1100);
+                //var p9 = new Player("Player 9", 1100);
 
                 var p10 = new Player("Player 10", 1700);
                 var p11 = new Player("Player 11", 2100);
@@ -52,7 +52,7 @@ class Program
                 p6.Game = game2;
                 p7.Game = game2;
                 p8.Game = game2;
-                p9.Game = game2;
+                //p9.Game = game2;
 
                 p10.Game = game3;
                 p11.Game = game3;
@@ -73,7 +73,7 @@ class Program
                 context.Players.Add(p6);
                 context.Players.Add(p7);
                 context.Players.Add(p8);
-                context.Players.Add(p9);
+                //context.Players.Add(p9);
 
                 context.Players.Add(p10);
                 context.Players.Add(p11);
