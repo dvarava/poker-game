@@ -250,9 +250,26 @@ namespace poker_game.Pages
             }
         }
 
-        private void NextPlayer()
+        private async void NextPlayer()
         {
-            // Check if all players have folded
+            // Check if all players went all-n
+            if (players.All(p => p.Chips <= 0))
+            {
+                Player winner = DetermineWinner().Winner;
+                string winningCombination = DetermineWinner().WinningCombination;
+
+                winner.Chips += pot;
+                UpdateChipDisplays();
+
+                string message = $"The winner is {winner.Name}, with {winningCombination} and {pot} chips win!";
+                MessageBox.Show(message, "Winner", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                await WriteWinnerInfoToFile(winner.Name, winningCombination, pot);
+
+                ResetGame();
+                return;
+            }
+            // Check if all players have folded except 1
             if (players.Count(p => !p.Folded) == 1)
             {
                 // Only one player left, determine the winner and reset the game
@@ -262,6 +279,15 @@ namespace poker_game.Pages
 
                 string message = $"The winner is {winner.Name} with {pot} chips win!";
                 MessageBox.Show(message, "Winner", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Write the winner's information to a text file (Name, date of win, pot amount won)
+                string winnerInfo = $"{winner.Name} won {pot} chips on {DateTime.Now.ToString("yyyy-MM-dd")}";
+                string filePath = "\\\\Mac\\Home\\Documents\\poker-game\\poker-game\\winner_log.txt";
+
+                using (StreamWriter writer = new StreamWriter(filePath, true))
+                {
+                    writer.WriteLineAsync(winnerInfo);
+                }
 
                 ResetGame();
                 return;
@@ -297,12 +323,12 @@ namespace poker_game.Pages
 
                 // Make a move
                 await TakeTurn(currentPlayerIndex);
+
                 if (IsBettingRoundOver())
                 {
                     roundEnded = true;
                 }
 
-                // Reset player action to default
                 playerAction = default(PlayerAction);
             } while (!roundEnded);
 
@@ -373,10 +399,11 @@ namespace poker_game.Pages
                         int raiseAmount = GetRaiseAmount(callAmount);
                         if (raiseAmount > callAmount && raiseAmount <= player.Chips)
                         {
+                            bool isAllIn = raiseAmount == player.Chips;
                             player.PlaceBet(raiseAmount - player.CurrentBet);
                             pot += raiseAmount;
                             currentBet = raiseAmount; // Update the current bet
-                            UpdatePlayerAction(player, $"Raised to {raiseAmount}");
+                            UpdatePlayerAction(player, isAllIn ? "All-In" : $"Raised to {raiseAmount}");
                             UpdateChipDisplays();
                             UpdatePotDisplay();
                             NextPlayer();
@@ -409,20 +436,21 @@ namespace poker_game.Pages
         {
             int currentBetAmount = currentBet;
             bool allCalledOrChecked = true;
-            int activePlayers = players.Count(p => !p.Folded);
+            int activePlayers = players.Count(p => !p.Folded && p.Chips > 0);
+            int allInPlayers = players.Count(p => !p.Folded && p.Chips == 0);
 
             if (currentBetAmount == 0)
             {
-                // When the current bet is 0, check if all active players have checked
+                // When the current bet is 0, check if all active players (not all-in) have checked
                 allCalledOrChecked = checkCount == activePlayers;
             }
             else
             {
                 foreach (Player player in players)
                 {
-                    if (!player.Folded)
+                    if (!player.Folded && player.Chips > 0)
                     {
-                        if (playerAction == PlayerAction.Check && checkCount != players.Count())
+                        if (playerAction == PlayerAction.Check && checkCount != activePlayers)
                         {
                             allCalledOrChecked = false;
                         }
@@ -430,7 +458,7 @@ namespace poker_game.Pages
                         {
                             if (player.CurrentBet < currentBetAmount)
                             {
-                                // If at least one player hasn't called the current bet
+                                // If at least one active player (not all-in) hasn't called the current bet
                                 allCalledOrChecked = false;
                                 break;
                             }
@@ -468,20 +496,6 @@ namespace poker_game.Pages
             }
         }
 
-        private async Task StartGame()
-        {
-            // Collect small blind and big blind
-            CollectBlinds();
-
-            // Set the current player to the player after the big blind
-            currentPlayerIndex = (bigBlindIndex + 1) % players.Count;
-            UpdateCurrentPlayerDisplay();
-
-            // Start the game loop
-            currentState = GameState.Preflop;
-            await GameLoop();
-        }
-
         // Assign Small and Big blinds to players
         private void CollectBlinds()
         {
@@ -494,6 +508,19 @@ namespace poker_game.Pages
             pot += bigBlind;
             currentBet = bigBlind;
             players[bigBlindIndex].BigBlind = true;
+        }
+
+        private async Task StartGame()
+        {
+            CollectBlinds();
+
+            // Set the current player to the player after the big blind
+            currentPlayerIndex = (bigBlindIndex + 1) % players.Count;
+            UpdateCurrentPlayerDisplay();
+
+            // Start the game loop
+            currentState = GameState.Preflop;
+            await GameLoop();
         }
 
         // Game logic
@@ -535,70 +562,16 @@ namespace poker_game.Pages
             string message = $"The winner is {winner.Name}, with {winningCombination} and {pot} chips win!";
             MessageBox.Show(message, "Winner", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            // Write the winner's information to a text file (Name, date of win, pot amount won)
-            string winnerInfo = $"{winner.Name} won {pot} chips witht {winningCombination} on {DateTime.Now.ToString("yyyy-MM-dd")}";
-            string filePath = "\\\\Mac\\Home\\Documents\\poker-game\\poker-game\\winner_log.txt";
-
-            using (StreamWriter writer = new StreamWriter(filePath, true))
-            {
-                await writer.WriteLineAsync(winnerInfo);
-            }
+            await WriteWinnerInfoToFile(winner.Name, winningCombination, pot);
 
             await Task.Delay(1000);
 
             ResetGame();
         }
 
-        // Advance to the next game state
         private void AdvanceToNextState()
         {
             currentState++;
-        }
-
-        // Reset the game when all players have folded or the game is over
-        private async void ResetGame()
-        {
-            // Reset player action, each player's current bet, pot
-            playerAction = default(PlayerAction);
-            ResetPlayerCurrentBet();
-            pot = 0;
-
-            // Reset each player's folded status, hand, action text
-            for (int i = 0; i < players.Count; i++)
-            {
-                TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
-                actionTextBlock.Text = string.Empty;
-            }
-            foreach (var player in players)
-            {
-                player.Folded = false;
-                player.Hand.Clear();
-
-                if (player.Chips <= 0)
-                {
-                    player.Chips = 1000;
-                }
-            }
-
-            // Rotate small blind, big blind indexes
-            smallBlindIndex = (smallBlindIndex + 1) % players.Count;
-            bigBlindIndex = (bigBlindIndex + 1) % players.Count;
-
-            // Clear community cards displays, list
-            ClearCommunityCards();
-
-            // Initialize a new deck and shuffle it
-            deck = new Deck();
-            deck.Shuffle();
-
-            // Deal new cards to players, community cards
-            DealCards();
-
-            // Update UI
-            UpdatePotDisplay();
-            UpdateChipDisplays();
-
-            await StartGame();
         }
 
         // Evaluate the hands of each player and determine the winner
@@ -631,6 +604,63 @@ namespace poker_game.Pages
                 Winner = winner,
                 WinningCombination = winningCombination
             };
+        }
+
+        private async Task WriteWinnerInfoToFile(string winnerName, string winningCombination, int potAmount)
+        {
+            string winnerInfo = $"{winnerName} won {potAmount} chips with {winningCombination} on {DateTime.Now.ToString("yyyy-MM-dd")}";
+            string filePath = "\\\\Mac\\Home\\Documents\\poker-game\\poker-game\\winner_log.txt";
+
+            using (StreamWriter writer = new StreamWriter(filePath, true))
+            {
+                await writer.WriteLineAsync(winnerInfo);
+            }
+        }
+
+        // Reset the game when all players have folded or the game is over
+        private async void ResetGame()
+        {
+            // Reset player action, each player's current bet, pot
+            playerAction = default(PlayerAction);
+            ResetPlayerCurrentBet();
+            pot = 0;
+
+            // Reset each player's folded status, hand, action text
+            for (int i = 0; i < players.Count; i++)
+            {
+                TextBlock actionTextBlock = GetPlayerActionTextBlock(i);
+                actionTextBlock.Text = string.Empty;
+            }
+            foreach (var player in players)
+            {
+                player.Folded = false;
+                player.Hand.Clear();
+
+                if (player.Chips == 0)
+                {
+                    player.Chips = 1000;
+                }
+            }
+
+            // Rotate small blind, big blind indexes
+            smallBlindIndex = (smallBlindIndex + 1) % players.Count;
+            bigBlindIndex = (bigBlindIndex + 1) % players.Count;
+
+            ClearCommunityCards();
+
+            // Initialize a new deck and shuffle it
+            deck = new Deck();
+            deck.Shuffle();
+
+            // Deal new cards to players, community cards
+            DealCards();
+
+            // Update UI
+            UpdatePotDisplay();
+            UpdateChipDisplays();
+
+            // Start a new game
+            await StartGame();
         }
 
         // Buttons click events
