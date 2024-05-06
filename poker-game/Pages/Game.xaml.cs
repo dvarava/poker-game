@@ -411,7 +411,7 @@ namespace poker_game.Pages
                         }
                         else if (raiseAmount == callAmount)
                         {
-                            // User canceled the dialog
+                            // Player canceled the dialog
                             break;
                         }
                         else
